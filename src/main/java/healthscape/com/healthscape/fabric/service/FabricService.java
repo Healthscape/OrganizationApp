@@ -1,35 +1,23 @@
-package healthscape.com.healthscape.service;
-
-import healthscape.com.healthscape.util.Config;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+package healthscape.com.healthscape.fabric.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
+import healthscape.com.healthscape.util.Config;
 import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.TlsChannelCredentials;
-import org.hyperledger.fabric.client.CommitException;
-import org.hyperledger.fabric.client.CommitStatusException;
-import org.hyperledger.fabric.client.Contract;
-import org.hyperledger.fabric.client.EndorseException;
-import org.hyperledger.fabric.client.Gateway;
-import org.hyperledger.fabric.client.GatewayException;
-import org.hyperledger.fabric.client.SubmitException;
-import org.hyperledger.fabric.client.identity.Identities;
-import org.hyperledger.fabric.client.identity.Identity;
-import org.hyperledger.fabric.client.identity.Signer;
-import org.hyperledger.fabric.client.identity.Signers;
-import org.hyperledger.fabric.client.identity.X509Identity;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hyperledger.fabric.client.*;
+import org.hyperledger.fabric.client.identity.*;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.cert.CertificateException;
 import java.time.Instant;
@@ -45,39 +33,9 @@ public class FabricService {
     private final String assetId = "asset" + Instant.now().toEpochMilli();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public void createConnection() throws Exception {
-        // The gRPC client connection should be shared by all Gateway connections to
-        // this endpoint.
-        var channel = newGrpcConnection();
-
-        var builder = Gateway.newInstance().identity(newIdentity()).signer(newSigner()).connection(channel)
-                // Default timeouts for different gRPC calls
-                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.SECONDS))
-                .submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS))
-                .commitStatusOptions(options -> options.withDeadlineAfter(1, TimeUnit.MINUTES));
-
-        try (var gateway = builder.connect()) {
-            // Get a network instance representing the channel where the smart contract is
-            // deployed.
-            var network = gateway.getNetwork(Config.CHANNEL_NAME);
-
-            // Get the smart contract from the network.
-            contract = network.getContract(Config.CHAINCODE_NAME);
-
-            this.run();
-        } finally {
-            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-        }
-    }
-
     private static ManagedChannel newGrpcConnection() throws IOException {
-        var credentials = TlsChannelCredentials.newBuilder()
-                .trustManager(Config.TLS_CERT_PATH.toFile())
-                .build();
-        return Grpc.newChannelBuilder(Config.PEER_ENDPOINT, credentials)
-                .overrideAuthority(Config.OVERRIDE_AUTH)
-                .build();
+        var credentials = TlsChannelCredentials.newBuilder().trustManager(Config.TLS_CERT_PATH.toFile()).build();
+        return Grpc.newChannelBuilder(Config.PEER_ENDPOINT, credentials).overrideAuthority(Config.OVERRIDE_AUTH).build();
     }
 
     private static Identity newIdentity() throws IOException, CertificateException {
@@ -97,6 +55,29 @@ public class FabricService {
     private static Path getPrivateKeyPath() throws IOException {
         try (var keyFiles = Files.list(Config.KEY_DIR_PATH)) {
             return keyFiles.findFirst().orElseThrow();
+        }
+    }
+
+    public void createConnection() throws Exception {
+        // The gRPC client connection should be shared by all Gateway connections to
+        // this endpoint.
+        var channel = newGrpcConnection();
+
+        var builder = Gateway.newInstance().identity(newIdentity()).signer(newSigner()).connection(channel)
+                // Default timeouts for different gRPC calls
+                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS)).endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.SECONDS)).submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS)).commitStatusOptions(options -> options.withDeadlineAfter(1, TimeUnit.MINUTES));
+
+        try (var gateway = builder.connect()) {
+            // Get a network instance representing the channel where the smart contract is
+            // deployed.
+            var network = gateway.getNetwork(Config.CHANNEL_NAME);
+
+            // Get the smart contract from the network.
+            contract = network.getContract(Config.CHAINCODE_NAME);
+
+            this.run();
+        } finally {
+            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
         }
     }
 
@@ -173,11 +154,7 @@ public class FabricService {
     private void transferAssetAsync() throws EndorseException, SubmitException, CommitStatusException {
         System.out.println("\n--> Async Submit Transaction: TransferAsset, updates existing asset owner");
 
-        var commit = contract.newProposal("TransferAsset")
-                .addArguments(assetId, "Saptha")
-                .build()
-                .endorse()
-                .submitAsync();
+        var commit = contract.newProposal("TransferAsset").addArguments(assetId, "Saptha").build().endorse().submitAsync();
 
         var result = commit.getResult();
         var oldOwner = new String(result, StandardCharsets.UTF_8);
@@ -187,8 +164,7 @@ public class FabricService {
 
         var status = commit.getStatus();
         if (!status.isSuccessful()) {
-            throw new RuntimeException("Transaction " + status.getTransactionId() +
-                    " failed to commit with status code " + status.getCode());
+            throw new RuntimeException("Transaction " + status.getTransactionId() + " failed to commit with status code " + status.getCode());
         }
 
         System.out.println("*** Transaction committed successfully");
@@ -222,8 +198,7 @@ public class FabricService {
             if (!details.isEmpty()) {
                 System.out.println("Error Details:");
                 for (var detail : details) {
-                    System.out.println("- address: " + detail.getAddress() + ", mspId: " + detail.getMspId()
-                            + ", message: " + detail.getMessage());
+                    System.out.println("- address: " + detail.getAddress() + ", mspId: " + detail.getMspId() + ", message: " + detail.getMessage());
                 }
             }
         } catch (CommitException e) {

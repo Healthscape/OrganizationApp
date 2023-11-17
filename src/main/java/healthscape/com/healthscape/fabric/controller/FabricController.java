@@ -1,6 +1,6 @@
-package healthscape.com.healthscape.controller;
+package healthscape.com.healthscape.fabric.controller;
 
-import healthscape.com.healthscape.service.FabricService;
+import healthscape.com.healthscape.fabric.service.FabricService;
 import healthscape.com.healthscape.util.Config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +25,13 @@ public class FabricController {
 
         try {
             fabricService.createConnection();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/test")
     public ResponseEntity<?> test() {
         System.out.println(Config.CERT_PATH);
