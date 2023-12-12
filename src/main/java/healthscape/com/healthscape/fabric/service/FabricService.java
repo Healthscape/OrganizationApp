@@ -1,27 +1,26 @@
 package healthscape.com.healthscape.fabric.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
 import healthscape.com.healthscape.util.Config;
-import io.grpc.Grpc;
-import io.grpc.ManagedChannel;
-import io.grpc.TlsChannelCredentials;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hyperledger.fabric.client.*;
-import org.hyperledger.fabric.client.identity.*;
+import org.apache.commons.io.FileUtils;
+import org.hyperledger.fabric.gateway.*;
+import org.hyperledger.fabric.sdk.Enrollment;
+import org.hyperledger.fabric.sdk.User;
+import org.hyperledger.fabric.sdk.security.CryptoSuite;
+import org.hyperledger.fabric.sdk.security.CryptoSuiteFactory;
+import org.hyperledger.fabric_ca.sdk.EnrollmentRequest;
+import org.hyperledger.fabric_ca.sdk.HFCAClient;
+import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.File;
 import java.nio.file.Path;
-import java.security.InvalidKeyException;
-import java.security.cert.CertificateException;
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
+import java.nio.file.Paths;
+import java.security.PrivateKey;
+import java.util.Properties;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,183 +28,212 @@ import java.util.concurrent.TimeUnit;
 @Transactional
 public class FabricService {
 
-    private static Contract contract = null;
-    private final String assetId = "asset" + Instant.now().toEpochMilli();
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final String CHANNEL_NAME = System.getenv().getOrDefault("CHANNEL_NAME", "mychannel");
+    private static final String CHAINCODE_NAME = System.getenv().getOrDefault("CHAINCODE_NAME", "basic");
 
-    private static ManagedChannel newGrpcConnection() throws IOException {
-        var credentials = TlsChannelCredentials.newBuilder().trustManager(Config.TLS_CERT_PATH.toFile()).build();
-        return Grpc.newChannelBuilder(Config.PEER_ENDPOINT, credentials).overrideAuthority(Config.OVERRIDE_AUTH).build();
+    static {
+        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
     }
 
-    private static Identity newIdentity() throws IOException, CertificateException {
-        var certReader = Files.newBufferedReader(Config.CERT_PATH);
-        var certificate = Identities.readX509Certificate(certReader);
+    // helper function for getting connected to the gateway
+    public static Gateway connect() throws Exception {
+        // Load a file system based wallet for managing identities.
+        Path walletPath = Paths.get("wallet");
+        Wallet wallet = Wallets.newFileSystemWallet(walletPath);
+        // load a CCP
+        Path networkConfigPath = Paths.get(String.valueOf(Config.CRYPTO_PATH), "connection-org1.yaml");
 
-        return new X509Identity(Config.MSP_ID, certificate);
+        Gateway.Builder builder = Gateway.createBuilder();
+        builder.identity(wallet, "javaAppUser").networkConfig(networkConfigPath).discovery(true);
+
+        return builder.connect();
     }
 
-    private static Signer newSigner() throws IOException, InvalidKeyException {
-        var keyReader = Files.newBufferedReader(getPrivateKeyPath());
-        var privateKey = Identities.readPrivateKey(keyReader);
+    public void run() throws Exception {
+        // enrolls the admin and registers the user
+//        try {
+//            enrollAdmin();
+//            registerUser();
+//        } catch (Exception e) {
+//            System.err.println(e);
+//        }
 
-        return Signers.newPrivateKeySigner(privateKey);
-    }
+        // connect to the network and invoke the smart contract
+        try (Gateway gateway = connect()) {
 
-    private static Path getPrivateKeyPath() throws IOException {
-        try (var keyFiles = Files.list(Config.KEY_DIR_PATH)) {
-            return keyFiles.findFirst().orElseThrow();
-        }
-    }
+            // get the network and contract
+            Network network = gateway.getNetwork(CHANNEL_NAME);
+            Contract contract = network.getContract(CHAINCODE_NAME);
 
-    public void createConnection() throws Exception {
-        // The gRPC client connection should be shared by all Gateway connections to
-        // this endpoint.
-        var channel = newGrpcConnection();
+            byte[] result;
 
-        var builder = Gateway.newInstance().identity(newIdentity()).signer(newSigner()).connection(channel)
-                // Default timeouts for different gRPC calls
-                .evaluateOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS)).endorseOptions(options -> options.withDeadlineAfter(15, TimeUnit.SECONDS)).submitOptions(options -> options.withDeadlineAfter(5, TimeUnit.SECONDS)).commitStatusOptions(options -> options.withDeadlineAfter(1, TimeUnit.MINUTES));
+            System.out.println("Submit Transaction: InitLedger creates the initial set of assets on the ledger.");
+            contract.submitTransaction("InitLedger");
 
-        try (var gateway = builder.connect()) {
-            // Get a network instance representing the channel where the smart contract is
-            // deployed.
-            var network = gateway.getNetwork(Config.CHANNEL_NAME);
+            System.out.println("\n");
+            result = contract.evaluateTransaction("GetAllAssets");
+            System.out.println("Evaluate Transaction: GetAllAssets, result: " + new String(result));
 
-            // Get the smart contract from the network.
-            contract = network.getContract(Config.CHAINCODE_NAME);
+            System.out.println("\n");
+            System.out.println("Submit Transaction: CreateAsset asset213");
+            // CreateAsset creates an asset with ID asset213, color yellow, owner Tom, size 5 and appraisedValue of 1300
+            contract.submitTransaction("CreateAsset", "asset213", "yellow", "5", "Tom", "1300");
 
-            this.run();
-        } finally {
-            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-        }
-    }
+            System.out.println("\n");
+            System.out.println("Evaluate Transaction: ReadAsset asset213");
+            // ReadAsset returns an asset with given assetID
+            result = contract.evaluateTransaction("ReadAsset", "asset213");
+            System.out.println("result: " + new String(result));
 
-    public void run() throws GatewayException, CommitException {
-        // Initialize a set of asset data on the ledger using the chaincode 'InitLedger' function.
-        initLedger();
+            System.out.println("\n");
+            System.out.println("Evaluate Transaction: AssetExists asset1");
+            // AssetExists returns "true" if an asset with given assetID exist
+            result = contract.evaluateTransaction("AssetExists", "asset1");
+            System.out.println("result: " + new String(result));
 
-        // Return all the current assets on the ledger.
-        getAllAssets();
+            System.out.println("\n");
+            System.out.println("Submit Transaction: UpdateAsset asset1, new AppraisedValue : 350");
+            // UpdateAsset updates an existing asset with new properties. Same args as CreateAsset
+            contract.submitTransaction("UpdateAsset", "asset1", "blue", "5", "Tomoko", "350");
 
-        // Create a new asset on the ledger.
-        createAsset();
+            System.out.println("\n");
+            System.out.println("Evaluate Transaction: ReadAsset asset1");
+            result = contract.evaluateTransaction("ReadAsset", "asset1");
+            System.out.println("result: " + new String(result));
 
-        // Update an existing asset asynchronously.
-        transferAssetAsync();
-
-        // Get the asset details by assetID.
-        readAssetById();
-
-        // Update an asset which does not exist.
-        updateNonExistentAsset();
-    }
-
-    /**
-     * This type of transaction would typically only be run once by an application
-     * the first time it was started after its initial deployment. A new version of
-     * the chaincode deployed later would likely not need to run an "init" function.
-     */
-    private void initLedger() throws EndorseException, SubmitException, CommitStatusException, CommitException {
-        System.out.println("\n--> Submit Transaction: InitLedger, function creates the initial set of assets on the ledger");
-
-        contract.submitTransaction("InitLedger");
-
-        System.out.println("*** Transaction committed successfully");
-    }
-
-    /**
-     * Evaluate a transaction to query ledger state.
-     */
-    private void getAllAssets() throws GatewayException {
-        System.out.println("\n--> Evaluate Transaction: GetAllAssets, function returns all the current assets on the ledger");
-
-        var result = contract.evaluateTransaction("GetAllAssets");
-
-        System.out.println("*** Result: " + prettyJson(result));
-    }
-
-    private String prettyJson(final byte[] json) {
-        return prettyJson(new String(json, StandardCharsets.UTF_8));
-    }
-
-    private String prettyJson(final String json) {
-        var parsedJson = JsonParser.parseString(json);
-        return gson.toJson(parsedJson);
-    }
-
-    /**
-     * Submit a transaction synchronously, blocking until it has been committed to
-     * the ledger.
-     */
-    private void createAsset() throws EndorseException, SubmitException, CommitStatusException, CommitException {
-        System.out.println("\n--> Submit Transaction: CreateAsset, creates new asset with ID, Color, Size, Owner and AppraisedValue arguments");
-
-        contract.submitTransaction("CreateAsset", assetId, "yellow", "5", "Tom", "1300");
-
-        System.out.println("*** Transaction committed successfully");
-    }
-
-    /**
-     * Submit transaction asynchronously, allowing the application to process the
-     * smart contract response (e.g. update a UI) while waiting for the commit
-     * notification.
-     */
-    private void transferAssetAsync() throws EndorseException, SubmitException, CommitStatusException {
-        System.out.println("\n--> Async Submit Transaction: TransferAsset, updates existing asset owner");
-
-        var commit = contract.newProposal("TransferAsset").addArguments(assetId, "Saptha").build().endorse().submitAsync();
-
-        var result = commit.getResult();
-        var oldOwner = new String(result, StandardCharsets.UTF_8);
-
-        System.out.println("*** Successfully submitted transaction to transfer ownership from " + oldOwner + " to Saptha");
-        System.out.println("*** Waiting for transaction commit");
-
-        var status = commit.getStatus();
-        if (!status.isSuccessful()) {
-            throw new RuntimeException("Transaction " + status.getTransactionId() + " failed to commit with status code " + status.getCode());
-        }
-
-        System.out.println("*** Transaction committed successfully");
-    }
-
-    private void readAssetById() throws GatewayException {
-        System.out.println("\n--> Evaluate Transaction: ReadAsset, function returns asset attributes");
-
-        var evaluateResult = contract.evaluateTransaction("ReadAsset", assetId);
-
-        System.out.println("*** Result:" + prettyJson(evaluateResult));
-    }
-
-    /**
-     * submitTransaction() will throw an error containing details of any error
-     * responses from the smart contract.
-     */
-    private void updateNonExistentAsset() {
-        try {
-            System.out.println("\n--> Submit Transaction: UpdateAsset asset70, asset70 does not exist and should return an error");
-
-            contract.submitTransaction("UpdateAsset", "asset70", "blue", "5", "Tomoko", "300");
-
-            System.out.println("******** FAILED to return an error");
-        } catch (EndorseException | SubmitException | CommitStatusException e) {
-            System.out.println("*** Successfully caught the error: ");
-            e.printStackTrace(System.out);
-            System.out.println("Transaction ID: " + e.getTransactionId());
-
-            var details = e.getDetails();
-            if (!details.isEmpty()) {
-                System.out.println("Error Details:");
-                for (var detail : details) {
-                    System.out.println("- address: " + detail.getAddress() + ", mspId: " + detail.getMspId() + ", message: " + detail.getMessage());
-                }
+            try {
+                System.out.println("\n");
+                System.out.println("Submit Transaction: UpdateAsset asset70");
+                // Non existing asset asset70 should throw Error
+                contract.submitTransaction("UpdateAsset", "asset70", "blue", "5", "Tomoko", "300");
+            } catch (Exception e) {
+                System.err.println("Expected an error on UpdateAsset of non-existing Asset: " + e);
             }
-        } catch (CommitException e) {
-            System.out.println("*** Successfully caught the error: " + e);
-            e.printStackTrace(System.out);
-            System.out.println("Transaction ID: " + e.getTransactionId());
-            System.out.println("Status code: " + e.getCode());
+
+            System.out.println("\n");
+            System.out.println("Submit Transaction: TransferAsset asset1 from owner Tomoko > owner Tom");
+            // TransferAsset transfers an asset with given ID to new owner Tom
+            contract.submitTransaction("TransferAsset", "asset1", "Tom");
+
+            System.out.println("\n");
+            System.out.println("Evaluate Transaction: ReadAsset asset1");
+            result = contract.evaluateTransaction("ReadAsset", "asset1");
+            System.out.println("result: " + new String(result));
+        } catch (Exception e) {
+            System.err.println(e);
+            System.exit(1);
         }
+
     }
+
+    private void enrollAdmin() throws Exception {
+        // Create a CA client for interacting with the CA.
+        Properties props = new Properties();
+        props.put("pemFile", Config.CRYPTO_PATH + "/ca/ca.org1.example.com-cert.pem");
+        props.put("allowAllHostNames", "true");
+        HFCAClient caClient = HFCAClient.createNewInstance("https://" + "localhost:7054", props);
+        CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
+        caClient.setCryptoSuite(cryptoSuite);
+
+        // Delete wallet if it exists from prior runs
+        FileUtils.deleteDirectory(new File("wallet"));
+
+        // Create a wallet for managing identities
+        Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
+
+        // Check to see if we've already enrolled the admin user.
+        if (wallet.get("admin") != null) {
+            System.out.println("An identity for the admin user \"admin\" already exists in the wallet");
+            return;
+        }
+
+        // Enroll the admin user, and import the new identity into the wallet.
+        final EnrollmentRequest enrollmentRequestTLS = new EnrollmentRequest();
+        enrollmentRequestTLS.addHost("localhost");
+        enrollmentRequestTLS.setProfile("tls");
+        Enrollment enrollment = caClient.enroll("admin", "adminpw", enrollmentRequestTLS);
+        Identity user = Identities.newX509Identity("Org1MSP", enrollment);
+        wallet.put("admin", user);
+        System.out.println("Successfully enrolled user \"admin\" and imported it into the wallet");
+    }
+
+    private void registerUser() throws Exception {
+        // Create a CA client for interacting with the CA.
+        Properties props = new Properties();
+        props.put("pemFile", Config.CRYPTO_PATH + "/ca/ca.org1.example.com-cert.pem");
+        props.put("allowAllHostNames", "true");
+        HFCAClient caClient = HFCAClient.createNewInstance("https://" + Config.CA_ENDPOINT, props);
+        CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
+        caClient.setCryptoSuite(cryptoSuite);
+
+        // Create a wallet for managing identities
+        Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
+
+        // Check to see if we've already enrolled the user.
+        if (wallet.get("javaAppUser") != null) {
+            System.out.println("An identity for the user \"javaAppUser\" already exists in the wallet");
+            return;
+        }
+
+        X509Identity adminIdentity = (X509Identity) wallet.get("admin");
+        if (adminIdentity == null) {
+            System.out.println("\"admin\" needs to be enrolled and added to the wallet first");
+            return;
+        }
+        User admin = new User() {
+
+            @Override
+            public String getName() {
+                return "admin";
+            }
+
+            @Override
+            public Set<String> getRoles() {
+                return null;
+            }
+
+            @Override
+            public String getAccount() {
+                return null;
+            }
+
+            @Override
+            public String getAffiliation() {
+                return "org1.department1";
+            }
+
+            @Override
+            public Enrollment getEnrollment() {
+                return new Enrollment() {
+
+                    @Override
+                    public PrivateKey getKey() {
+                        return adminIdentity.getPrivateKey();
+                    }
+
+                    @Override
+                    public String getCert() {
+                        return Identities.toPemString(adminIdentity.getCertificate());
+                    }
+                };
+            }
+
+            @Override
+            public String getMspId() {
+                return "Org1MSP";
+            }
+
+        };
+
+        // Register the user, enroll the user, and import the new identity into the wallet.
+        RegistrationRequest registrationRequest = new RegistrationRequest("javaAppUser");
+        registrationRequest.setAffiliation("org1.department1");
+        registrationRequest.setEnrollmentID("javaAppUser");
+        String enrollmentSecret = caClient.register(registrationRequest, admin);
+        Enrollment enrollment = caClient.enroll("javaAppUser", enrollmentSecret);
+        Identity user = Identities.newX509Identity("Org1MSP", enrollment);
+        wallet.put("javaAppUser", user);
+        System.out.println("Successfully enrolled user \"javaAppUser\" and imported it into the wallet");
+    }
+
 }

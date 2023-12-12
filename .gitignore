@@ -34,3 +34,6 @@ build/
 
 ### Certificates ###
 /src/main/resources/org1.example.com/
+
+### Wallet ###
+/wallet/

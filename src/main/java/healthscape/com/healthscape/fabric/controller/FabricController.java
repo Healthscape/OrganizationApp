@@ -24,7 +24,7 @@ public class FabricController {
     public ResponseEntity<?> run() {
 
         try {
-            fabricService.createConnection();
+            fabricService.run();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

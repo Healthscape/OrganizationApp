@@ -32,6 +32,7 @@ services:
       - healthscape_db
     environment:
       PEER_ENDPOINT: ${PEER_ENDPOINT}
+      CA_ENDPOINT: ${CA_ENDPOINT}
       SPRING_DATASOURCE_URL: jdbc:postgresql://healthscape_db:5432/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASS}
