@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -20,8 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppUser implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -38,7 +39,7 @@ public class AppUser implements UserDetails {
     @ManyToOne(targetEntity = Role.class, cascade = CascadeType.MERGE)
     private Role role;
 
-    public void setId(Integer id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

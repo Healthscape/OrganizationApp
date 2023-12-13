@@ -1,12 +1,15 @@
 package healthscape.com.healthscape.users.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import healthscape.com.healthscape.security.util.TokenUtils;
 import healthscape.com.healthscape.users.dto.RegisterDto;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
+import healthscape.com.healthscape.util.Config;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,10 +26,22 @@ public class UserService implements UserDetailsService {
     private final RoleService roleService;
     private final ObjectMapper objectMapper;
     private final PasswordEncoder passwordEncoder;
+    private final TokenUtils tokenUtils;
+
+    public AppUser getUserFromToken(String token) {
+        log.info("Fetching user from token: {}", token);
+        String email = tokenUtils.getEmailFromToken(token);
+        return userRepo.findByEmail(email);
+    }
 
     public AppUser getUserByEmail(String email) {
         log.info("Fetching user {}", email);
         return userRepo.findByEmail(email);
+    }
+
+    public AppUser getUserByRole(String role) {
+        log.info("Fetching user with role {}", role);
+        return userRepo.findAppUserByRole(roleService.getByName(role));
     }
 
     public AppUser register(RegisterDto user) {
@@ -47,5 +62,19 @@ public class UserService implements UserDetailsService {
         } else {
             return user;
         }
+    }
+
+    public void deleteUser(AppUser user) {
+        log.debug("DU - email: {}", user.getEmail());
+        userRepo.delete(user);
+    }
+
+    public void registerAdmin() {
+        log.info("Register user admin");
+        RegisterDto user = new RegisterDto("Admin", "Admin", Config.ADMIN_IDENTITY_ID, Config.ADMIN_PASSWORD);
+        AppUser appUser = objectMapper.convertValue(user, AppUser.class);
+        appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
+        appUser.setRole(roleService.getByName("ROLE_ADMIN"));
+        userRepo.save(appUser);
     }
 }
