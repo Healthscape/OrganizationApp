@@ -30,5 +30,5 @@ public class Config {
     public static final String WALLET_DIRECTORY = "wallet";
     public static final String ADMIN_IDENTITY_ID = "admin";
     public static final String ADMIN_PASSWORD = "adminpw";
-    public static final String NETWORK_CONFIG_PATH = Config.CRYPTO_PATH + "connection-org1.yaml";
+    public static final String NETWORK_CONFIG_PATH = Config.CRYPTO_PATH + "/connection-org1.yaml";
 }

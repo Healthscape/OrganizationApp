@@ -20,7 +20,15 @@ public class FabricTransactionService {
 
     private final UserService userService;
 
+    static {
+        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
+    }
+
     private Contract getContract(String email) throws Exception {
+        if(email.isBlank() || email.isEmpty()){
+            System.out.println("Email cannot be empty.");
+            throw new Exception("Email cannot be empty.");
+        }
         // Load a file system based wallet for managing identities.
         Path walletPath = Paths.get(Config.WALLET_DIRECTORY);
         Wallet wallet = Wallets.newFileSystemWallet(walletPath);
