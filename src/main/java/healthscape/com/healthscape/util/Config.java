@@ -12,7 +12,7 @@ public class Config {
 
     public static final String MSP_ID = System.getenv().getOrDefault("MSP_ID", "Org1MSP");
     public static final String CHANNEL_NAME = System.getenv().getOrDefault("CHANNEL_NAME", "mychannel");
-    public static final String CHAINCODE_NAME = System.getenv().getOrDefault("CHAINCODE_NAME", "basic");
+    public static final String CHAINCODE_NAME = System.getenv().getOrDefault("CHAINCODE_NAME", "ledger");
     // Gateway peer end point.
     public static final String PEER_ENDPOINT = System.getenv().getOrDefault("PEER_ENDPOINT", "localhost:7051");
     public static final String CA_ENDPOINT = System.getenv().getOrDefault("CA_ENDPOINT", "localhost:7054");
@@ -29,6 +29,12 @@ public class Config {
     public static final Path ORG_CA_CERT_PATH = Paths.get(CRYPTO_PATH + "/ca/ca.org1.example.com-cert.pem");
     public static final String WALLET_DIRECTORY = "wallet";
     public static final String ADMIN_IDENTITY_ID = "admin";
+    public static String ADMIN_ID = "admin";
     public static final String ADMIN_PASSWORD = "adminpw";
+    public static final String AFFILIATION = "org1";
     public static final String NETWORK_CONFIG_PATH = Config.CRYPTO_PATH + "/connection-org1.yaml";
+
+    public static void setAdminId(String id) {
+        ADMIN_ID = id;
+    }
 }

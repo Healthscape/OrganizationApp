@@ -9,12 +9,13 @@ import healthscape.com.healthscape.util.Config;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -69,12 +70,14 @@ public class UserService implements UserDetailsService {
         userRepo.delete(user);
     }
 
-    public void registerAdmin() {
+    public AppUser registerAdmin() {
         log.info("Register user admin");
         RegisterDto user = new RegisterDto("Admin", "Admin", Config.ADMIN_IDENTITY_ID, Config.ADMIN_PASSWORD);
         AppUser appUser = objectMapper.convertValue(user, AppUser.class);
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         appUser.setRole(roleService.getByName("ROLE_ADMIN"));
-        userRepo.save(appUser);
+        AppUser admin = userRepo.save(appUser);
+        Config.setAdminId(admin.getId().toString());
+        return admin;
     }
 }

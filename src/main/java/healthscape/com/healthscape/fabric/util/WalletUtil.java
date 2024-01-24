@@ -32,7 +32,7 @@ public class WalletUtil {
     }
 
     public X509Identity getAdminIdentity() throws IOException {
-        return (X509Identity) wallet.get(Config.ADMIN_IDENTITY_ID);
+        return (X509Identity) wallet.get(Config.ADMIN_ID);
     }
 
     public boolean doesExistById(UUID userIdentityId) throws IOException {
@@ -44,6 +44,6 @@ public class WalletUtil {
     }
 
     public boolean doesAdminExist() throws IOException {
-        return wallet.get(Config.ADMIN_IDENTITY_ID) != null;
+        return wallet.get(Config.ADMIN_ID) != null;
     }
 }

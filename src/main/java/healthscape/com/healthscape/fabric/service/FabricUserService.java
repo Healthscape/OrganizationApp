@@ -18,6 +18,7 @@ import org.hyperledger.fabric.sdk.exception.CryptoException;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.hyperledger.fabric.sdk.security.CryptoSuiteFactory;
+import org.hyperledger.fabric_ca.sdk.Attribute;
 import org.hyperledger.fabric_ca.sdk.EnrollmentRequest;
 import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
@@ -28,7 +29,10 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +67,7 @@ public class FabricUserService {
         enrollmentRequestTLS.setProfile("tls");
         Enrollment enrollment = caClient.enroll(Config.ADMIN_IDENTITY_ID, Config.ADMIN_PASSWORD, enrollmentRequestTLS);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
-        walletUtil.putIdentity(Config.ADMIN_IDENTITY_ID, user);
+        walletUtil.putIdentity(Config.ADMIN_ID, user);
         System.out.println("Successfully enrolled user \"admin\" and imported it into the wallet");
     }
 
@@ -83,8 +87,11 @@ public class FabricUserService {
         RegistrationRequest registrationRequest = new RegistrationRequest(userUUID);
         registrationRequest.setAffiliation("org1.department1");
         registrationRequest.setEnrollmentID(userUUID);
+        registrationRequest.addAttribute(new Attribute("role", appUser.getRole().getName()));
         String enrollmentSecret = caClient.register(registrationRequest, fabricAdmin);
-        Enrollment enrollment = caClient.enroll(userUUID, enrollmentSecret);
+        EnrollmentRequest enrollmentRequest = new EnrollmentRequest();
+        enrollmentRequest.addAttrReq("role");
+        Enrollment enrollment = caClient.enroll(userUUID, enrollmentSecret, enrollmentRequest);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
         walletUtil.putIdentity(userUUID, user);
         System.out.printf("Successfully enrolled user %s and imported it into the wallet", userUUID);

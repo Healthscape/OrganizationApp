@@ -1,5 +1,8 @@
 package healthscape.com.healthscape.fabric.service;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import healthscape.com.healthscape.fabric.model.Asset;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
@@ -9,8 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.*;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,68 +52,104 @@ public class FabricTransactionService {
         return network.getContract(Config.CHAINCODE_NAME);
     }
 
-    public void run(String email) {
-        try {
+    public void queryAssets(String email) throws Exception {
 
-            Contract contract = getContract(email);
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction:QueryAssets assets of size 15");
+        result = contract.evaluateTransaction("QueryAssets", "{\"selector\":{\"size\":15}}");
+        System.out.println("result: " + new String(result));
+    }
 
-            byte[] result;
+    public void getAssetHistory(String email, String id) throws Exception {
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction:GetAssetHistory " + id);
+        result = contract.evaluateTransaction("GetAssetHistory", id);
+        System.out.println("result: " + new String(result));
+    }
 
-            System.out.println("Submit Transaction: InitLedger creates the initial set of assets on the ledger.");
-            contract.submitTransaction("InitLedger");
+    public void queryAssetsByOwner(String email, String owner) throws Exception {
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction:QueryAssetsByOwner " + owner);
+        result = contract.evaluateTransaction("QueryAssetsByOwner", owner);
+        System.out.println("result: " + new String(result));
+    }
 
-            System.out.println("\n");
-            result = contract.evaluateTransaction("GetAllAssets");
-            System.out.println("Evaluate Transaction: GetAllAssets, result: " + new String(result));
+    public void transferAssetByColor(String email, String color, String newOwner) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: TransferAssetByColor " + color + " assets > newOwner " + newOwner);
+//        contract.submitTransaction("TransferAssetByColor", "yellow", "Michel");
+        contract.submitTransaction("TransferAssetByColor", color, newOwner);
+    }
 
-            System.out.println("\n");
-            System.out.println("Submit Transaction: CreateAsset asset213");
-            // CreateAsset creates an asset with ID asset213, color yellow, owner Tom, size 5 and appraisedValue of 1300
-            contract.submitTransaction("CreateAsset", "asset213", "yellow", "5", "Tom", "1300");
+    public void transferAsset(String email, String id, String newOwner) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: TransferAsset " + id + " to owner " + newOwner);
+        // TransferAsset transfers an asset with given ID to new owner Tom
+//        contract.submitTransaction("TransferAsset", "asset2", "Tom");
+        contract.submitTransaction("TransferAsset", id, newOwner);
+    }
 
-            System.out.println("\n");
-            System.out.println("Evaluate Transaction: ReadAsset asset213");
-            // ReadAsset returns an asset with given assetID
-            result = contract.evaluateTransaction("ReadAsset", "asset213");
-            System.out.println("result: " + new String(result));
+    public void deleteAsset(String email, String id) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: DeleteAsset " + id);
+        contract.submitTransaction("DeleteAsset", id);
+    }
+    public void assetExists(String email, String id) throws Exception {
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction: AssetExists " + id);
+        // AssetExists returns "true" if an asset with given assetID exist
+        result = contract.evaluateTransaction("AssetExists", id);
+        System.out.println("result: " + new String(result));
+    }
 
-            System.out.println("\n");
-            System.out.println("Evaluate Transaction: AssetExists asset1");
-            // AssetExists returns "true" if an asset with given assetID exist
-            result = contract.evaluateTransaction("AssetExists", "asset1");
-            System.out.println("result: " + new String(result));
+    public void readAsset(String email, String id) throws Exception {
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction: ReadAsset " + id);
+        // ReadAsset returns an asset with given assetID
+        result = contract.evaluateTransaction("ReadAsset", id);
+        System.out.println("result: " + new String(result));
+    }
 
-            System.out.println("\n");
-            System.out.println("Submit Transaction: UpdateAsset asset1, new AppraisedValue : 350");
-            // UpdateAsset updates an existing asset with new properties. Same args as CreateAsset
-            contract.submitTransaction("UpdateAsset", "asset1", "blue", "5", "Tomoko", "350");
+    public void createAsset(String email, String id) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: CreateAsset " + id);
+        // CreateAsset creates an asset with ID asset13, color yellow, owner Tom, size 5 and appraisedValue of 1300
+        contract.submitTransaction("CreateAsset", id, "yellow", "5", "Tom", "1300");
+    }
 
-            System.out.println("\n");
-            System.out.println("Evaluate Transaction: ReadAsset asset1");
-            result = contract.evaluateTransaction("ReadAsset", "asset1");
-            System.out.println("result: " + new String(result));
+    public void getAssetsByRange(String email) throws Exception {
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        result = contract.evaluateTransaction("GetAssetsByRange", "", "");
+        String jsonString = new String(result, StandardCharsets.UTF_8);
+        System.out.println("result: " + jsonString);
+    }
 
-            try {
-                System.out.println("\n");
-                System.out.println("Submit Transaction: UpdateAsset asset70");
-                // Non existing asset asset70 should throw Error
-                contract.submitTransaction("UpdateAsset", "asset70", "blue", "5", "Tomoko", "300");
-            } catch (Exception e) {
-                System.err.println("Expected an error on UpdateAsset of non-existing Asset: " + e);
-            }
+    public void initLedger(String email) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: InitLedger creates the initial set of assets on the ledger.");
+        contract.submitTransaction("InitLedger");
+    }
 
-            System.out.println("\n");
-            System.out.println("Submit Transaction: TransferAsset asset1 from owner Tomoko > owner Tom");
-            // TransferAsset transfers an asset with given ID to new owner Tom
-            contract.submitTransaction("TransferAsset", "asset1", "Tom");
-
-            System.out.println("\n");
-            System.out.println("Evaluate Transaction: ReadAsset asset1");
-            result = contract.evaluateTransaction("ReadAsset", "asset1");
-            System.out.println("result: " + new String(result));
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-
+    private static List<Asset> deserializeJson(String jsonString) {
+        Gson gson = new Gson();
+        Type myObjectType = new TypeToken<List<Asset>>(){}.getType();
+        return gson.fromJson(jsonString, myObjectType);
     }
 }
