@@ -1,7 +1,5 @@
 package healthscape.com.healthscape;
 
-import healthscape.com.healthscape.fhir.converter.HapiMessageConverterConfigurer;
-import healthscape.com.healthscape.fhir.converter.HapiSwaggerSupport;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,17 +17,6 @@ public class HealthscapeApplication {
     public FhirContext fhirContext() {
         return FhirContext.forR4();
     }
-
-    @Bean
-    public HapiMessageConverterConfigurer hapiMessageConverterConfigurer(FhirContext fhirContext) {
-        return new HapiMessageConverterConfigurer(fhirContext);
-    }
-
-    @Bean
-    public HapiSwaggerSupport hapiModelConverter() {
-        return new HapiSwaggerSupport();
-    }
-
     public static void main(String[] args) {
         SpringApplication.run(HealthscapeApplication.class, args);
     }
