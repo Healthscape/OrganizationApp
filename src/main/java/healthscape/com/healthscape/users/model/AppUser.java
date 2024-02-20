@@ -5,10 +5,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,8 +38,14 @@ public class AppUser implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "image", nullable = false)
+    private String image;
+
     @ManyToOne(targetEntity = Role.class, cascade = CascadeType.MERGE)
     private Role role;
+
+    @CreationTimestamp
+    private Timestamp dateCreated;
 
     public void setId(UUID id) {
         this.id = id;
