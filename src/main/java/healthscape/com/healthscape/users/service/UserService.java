@@ -3,19 +3,22 @@ package healthscape.com.healthscape.users.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import healthscape.com.healthscape.security.util.TokenUtils;
 import healthscape.com.healthscape.users.dto.RegisterDto;
+import healthscape.com.healthscape.users.dto.UserDto;
+import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
 import healthscape.com.healthscape.util.Config;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ public class UserService implements UserDetailsService {
 
     public AppUser getUserFromToken(String token) {
         log.info("Fetching user from token: {}", token);
+        token = token.split(" ")[1];
         String email = tokenUtils.getEmailFromToken(token);
         return userRepo.findByEmail(email);
     }
@@ -45,11 +49,12 @@ public class UserService implements UserDetailsService {
         return userRepo.findAppUserByRole(roleService.getByName(role));
     }
 
-    public AppUser register(RegisterDto user) {
+    public AppUser register(RegisterDto user, String roleName) {
         log.info("Register user {}", user.email);
         AppUser appUser = objectMapper.convertValue(user, AppUser.class);
+        appUser.setImage("https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Windows_10_Default_Profile_Picture.svg/768px-Windows_10_Default_Profile_Picture.svg.png");
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
-        appUser.setRole(roleService.getByName("ROLE_REGULAR"));
+        appUser.setRole(roleService.getByName(roleName));
         userRepo.save(appUser);
         return appUser;
     }
@@ -76,8 +81,14 @@ public class UserService implements UserDetailsService {
         AppUser appUser = objectMapper.convertValue(user, AppUser.class);
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         appUser.setRole(roleService.getByName("ROLE_ADMIN"));
+        appUser.setImage("https://static.thenounproject.com/png/3324336-200.png");
         AppUser admin = userRepo.save(appUser);
         Config.setAdminId(admin.getId().toString());
         return admin;
+    }
+
+    public List<AppUser> getUsers() {
+        log.info("Get all users");
+        return userRepo.findAll();
     }
 }

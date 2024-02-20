@@ -38,14 +38,14 @@ public class TokenUtils {
     public String generateToken(String username, String role, List<String> authorities) {
         log.debug("GT - user: {}", username);
         Date exp_date = new Date(new Date().getTime() + EXPIRES_IN);
-        return Jwts.builder().issuer(APP_NAME).subject(username).claim("role", role).claim("authorities", authorities).expiration(exp_date).issuedAt(new Date()).signWith(getSigningKey()).compact();
+        return Jwts.builder().issuer(APP_NAME).subject(username).claim("roles", role).claim("authorities", authorities).expiration(exp_date).issuedAt(new Date()).signWith(getSigningKey()).compact();
 
     }
 
     public String generateRefreshToken(String username, String role, List<String> authorities) {
         log.debug("GT - user: {}", username);
         Date exp_date = new Date(new Date().getTime() + REFRESH_EXPIRES_IN);
-        return Jwts.builder().issuer(APP_NAME).subject(username).claim("role", role).claim("authorities", authorities).expiration(exp_date).issuedAt(new Date()).signWith(getSigningKey()).compact();
+        return Jwts.builder().issuer(APP_NAME).subject(username).claim("roles", role).claim("authorities", authorities).expiration(exp_date).issuedAt(new Date()).signWith(getSigningKey()).compact();
     }
 
     private SecretKey getSigningKey() {
@@ -99,7 +99,7 @@ public class TokenUtils {
 
         try {
             final Claims claims = this.getAllClaimsFromToken(token);
-            role = claims.get("role", String.class);
+            role = claims.get("roles", String.class);
         } catch (ExpiredJwtException ex) {
             log.debug("GET RT - TE");
             throw ex;
