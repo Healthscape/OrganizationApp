@@ -38,9 +38,6 @@ public class AppUser implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "image", nullable = false)
-    private String image;
-
     @ManyToOne(targetEntity = Role.class, cascade = CascadeType.MERGE)
     private Role role;
 

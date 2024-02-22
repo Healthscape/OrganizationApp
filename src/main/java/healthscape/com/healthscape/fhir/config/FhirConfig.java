@@ -39,12 +39,6 @@ public class FhirConfig {
 
     @Bean
     public IGenericClient getFhirClient(FhirContext fhirContext) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-//        IGenericClient fhirClient = fhirContext.newRestfulGenericClient("https://127.0.0.1:443/fhir");
-//        fhirClient.registerInterceptor(customClientInterceptor);
-
-//        KeyStore truststore = null;
-//        KeyStore truststore = KeyStore.getInstance("JKS");
-//        truststore.load(new FileInputStream("healthscape.p12"), "healthscape");
         SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(keyStore, new TrustSelfSignedStrategy()).build();
 
         HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
@@ -53,8 +47,7 @@ public class FhirConfig {
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslFactory).build();
         fhirContext.getRestfulClientFactory().setHttpClient(httpClient);
 
-        IGenericClient fhirClient = fhirContext.newRestfulGenericClient("https://127.0.0.1:443/fhir");
-        return fhirClient;
+        return fhirContext.newRestfulGenericClient("https://127.0.0.1:443/fhir");
     }
 }
 

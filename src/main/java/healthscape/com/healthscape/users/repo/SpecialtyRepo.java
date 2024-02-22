@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpecialtyRepo  extends JpaRepository<Specialty, Integer> {
+
+    Specialty findByCode(String code);
 }

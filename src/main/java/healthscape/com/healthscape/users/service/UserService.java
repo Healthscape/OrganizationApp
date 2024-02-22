@@ -52,7 +52,6 @@ public class UserService implements UserDetailsService {
     public AppUser register(RegisterDto user, String roleName) {
         log.info("Register user {}", user.email);
         AppUser appUser = objectMapper.convertValue(user, AppUser.class);
-        appUser.setImage("https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Windows_10_Default_Profile_Picture.svg/768px-Windows_10_Default_Profile_Picture.svg.png");
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         appUser.setRole(roleService.getByName(roleName));
         userRepo.save(appUser);
@@ -77,11 +76,12 @@ public class UserService implements UserDetailsService {
 
     public AppUser registerAdmin() {
         log.info("Register user admin");
-        RegisterDto user = new RegisterDto("Admin", "Admin", Config.ADMIN_IDENTITY_ID, Config.ADMIN_PASSWORD);
-        AppUser appUser = objectMapper.convertValue(user, AppUser.class);
-        appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
+        AppUser appUser = new AppUser();
+        appUser.setName("Admin");
+        appUser.setSurname("Admin");
+        appUser.setEmail(Config.ADMIN_IDENTITY_ID);
+        appUser.setPassword(passwordEncoder.encode(Config.ADMIN_PASSWORD));
         appUser.setRole(roleService.getByName("ROLE_ADMIN"));
-        appUser.setImage("https://static.thenounproject.com/png/3324336-200.png");
         AppUser admin = userRepo.save(appUser);
         Config.setAdminId(admin.getId().toString());
         return admin;

@@ -17,7 +17,7 @@ public class UserDto {
     private String name;
     private String surname;
     private String email;
-    private String image;
+    private byte[] image;
     private String role;
     private Timestamp dateCreated;
 
@@ -25,7 +25,7 @@ public class UserDto {
         this.name = user.getName();
         this.surname = user.getSurname();
         this.email = user.getEmail();
-        this.image = user.getImage();
+        this.image = new byte[' '];
         this.role = user.getRole().getName();
         this.dateCreated = user.getDateCreated();
     }

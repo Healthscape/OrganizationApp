@@ -21,4 +21,8 @@ public class SpecialtyService {
     public List<Specialty> getAllSpecialties() {
         return specialtyRepo.findAll();
     }
+
+    public Specialty getByCode(String specialtyCode) {
+        return specialtyRepo.findByCode(specialtyCode);
+    }
 }

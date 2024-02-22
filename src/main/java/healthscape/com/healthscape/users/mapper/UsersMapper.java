@@ -31,4 +31,11 @@ public class UsersMapper {
         userDto.setRole(appUser.getRole().getName());
         return userDto;
     }
+    public UserDto userToUserDto(AppUser appUser,byte[] photo) {
+        UserDto userDto = new UserDto();
+        modelMapper.map(appUser, userDto);
+        userDto.setRole(appUser.getRole().getName());
+        userDto.setImage(photo);
+        return userDto;
+    }
 }
