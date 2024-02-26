@@ -23,14 +23,13 @@ public class PractitionerMapper {
         practitioner.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(appUser.getEmail());
 
         try {
-            InputStream in = getClass()
-                    .getResourceAsStream("/images/practitioner-default.png");
+            InputStream in = getClass().getResourceAsStream("/images/practitioner-default.png");
             byte[] byteArray = IOUtils.toByteArray(in);
             in.close();
             Attachment attachment = new Attachment();
             attachment.setData(byteArray);
             practitioner.setPhoto(List.of(attachment));
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
@@ -51,8 +50,8 @@ public class PractitionerMapper {
         fhirUserDto.setSurname(user.getName().get(0).getFamily());
         fhirUserDto.setGender(user.getGender().toString());
         fhirUserDto.setPhoto(Arrays.toString(user.getPhoto().get(0).getData()));
-        for(ContactPoint point: user.getTelecom()){
-            if(point.getSystem().equals(ContactPoint.ContactPointSystem.PHONE)) {
+        for (ContactPoint point : user.getTelecom()) {
+            if (point.getSystem().equals(ContactPoint.ContactPointSystem.PHONE)) {
                 fhirUserDto.setPhone(point.getValue());
             }
         }

@@ -4,15 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import healthscape.com.healthscape.security.util.TokenUtils;
 import healthscape.com.healthscape.users.dto.PasswordDto;
 import healthscape.com.healthscape.users.dto.RegisterDto;
-import healthscape.com.healthscape.users.dto.UserDto;
-import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
 import healthscape.com.healthscape.util.Config;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -95,11 +92,11 @@ public class UserService implements UserDetailsService {
 
     public void changePassword(String token, PasswordDto passwordDto) throws Exception {
         AppUser user = getUserFromToken(token);
-        if(!passwordEncoder.matches(passwordDto.getOldPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(passwordDto.getOldPassword(), user.getPassword())) {
             throw new Exception("Entered old password does not match with password in system.");
         }
 
-        if(!passwordDto.getNewPassword().equals(passwordDto.getConfirmPassword())){
+        if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmPassword())) {
             throw new Exception("Entered new password and confirm password does not match.");
 
         }
@@ -110,7 +107,7 @@ public class UserService implements UserDetailsService {
 
     public AppUser changeEmail(String token, String email) throws Exception {
         AppUser user = getUserFromToken(token);
-        if(userRepo.findByEmail(email) != null){
+        if (userRepo.findByEmail(email) != null) {
             throw new Exception("Email already exists.");
         }
 

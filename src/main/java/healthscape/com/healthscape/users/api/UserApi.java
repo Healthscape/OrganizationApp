@@ -79,9 +79,9 @@ public class UserApi {
 
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody PasswordDto passwordDto) {
-        try{
+        try {
             userService.changePassword(token, passwordDto);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
         }
 
@@ -90,9 +90,9 @@ public class UserApi {
 
     @PutMapping("")
     public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody FhirUserDto userDto) {
-        try{
+        try {
             fhirService.updateUser(token, userDto);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
         }
 

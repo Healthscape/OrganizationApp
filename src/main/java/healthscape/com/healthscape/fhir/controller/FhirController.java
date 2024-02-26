@@ -30,8 +30,8 @@ public class FhirController {
         return ResponseEntity.ok().body(fhirService.getUserFromToken(token));
     }
 
-//    @PatchMapping("/patient")
-//    public ResponseEntity<FhirPatientDto> updatePatient(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody FhirPatientDto updatedPatient) {
-//        return ResponseEntity.ok().body(fhirMapper.map(fhirService.updatePatient(token, updatedPatient)));
-//    }
+    //    @PatchMapping("/patient")
+    //    public ResponseEntity<FhirPatientDto> updatePatient(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody FhirPatientDto updatedPatient) {
+    //        return ResponseEntity.ok().body(fhirMapper.map(fhirService.updatePatient(token, updatedPatient)));
+    //    }
 }

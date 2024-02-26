@@ -28,14 +28,13 @@ public class FhirService {
     private final UserService userService;
     private final FhirMapper fhirMapper;
 
-    public void getMetadata(){
-        CapabilityStatement conf =
-                fhirClient.capabilities().ofType(CapabilityStatement.class).execute();
+    public void getMetadata() {
+        CapabilityStatement conf = fhirClient.capabilities().ofType(CapabilityStatement.class).execute();
         System.out.println(conf.getDescriptionElement().getValue());
     }
 
     public byte[] registerPatient(AppUser appUser, String ssn) {
-        Patient patient = patientMapper.appUserToFhirPatient(appUser,ssn);
+        Patient patient = patientMapper.appUserToFhirPatient(appUser, ssn);
         MethodOutcome methodOutcome = this.fhirClient.update().resource(patient).execute();
         return ((Patient) methodOutcome.getResource()).getPhoto().get(0).getData();
     }
@@ -51,7 +50,7 @@ public class FhirService {
         return this.fhirClient.read().resource(Patient.class).withId(id).execute();
     }
 
-    public Patient getPatientFromToken(String token){
+    public Patient getPatientFromToken(String token) {
         return getPatient(userService.getUserFromToken(token).getId().toString());
     }
 
@@ -59,7 +58,7 @@ public class FhirService {
         return this.fhirClient.read().resource(Practitioner.class).withId(id).execute();
     }
 
-    public Practitioner getPractitionerFromToken(String token){
+    public Practitioner getPractitionerFromToken(String token) {
         return getPractitioner(userService.getUserFromToken(token).getId().toString());
     }
 
@@ -68,7 +67,7 @@ public class FhirService {
         patient.addName().addGiven(updatedPatient.getName()).setFamily(updatedPatient.getSurname());
         patient.addTelecom().setSystem(ContactPoint.ContactPointSystem.PHONE).setValue(updatedPatient.getPhone());
 
-        if(updatedPatient.getAddress() != null) {
+        if (updatedPatient.getAddress() != null) {
             String[] addressList = updatedPatient.getAddress().split(", ");
             Address address = new Address();
             StringType stringType = new StringType();
@@ -80,11 +79,11 @@ public class FhirService {
             patient.setAddress(List.of(address));
         }
 
-        if(updatedPatient.getGender()!= null) {
+        if (updatedPatient.getGender() != null) {
             patient.setGender(Enumerations.AdministrativeGender.valueOf(updatedPatient.getGender()));
         }
         patient.setBirthDate(updatedPatient.getBirthDate());
-        if(updatedPatient.getMaritalStatus() != null) {
+        if (updatedPatient.getMaritalStatus() != null) {
             CodeableConcept codeableConcept = new CodeableConcept();
             codeableConcept.getCodingFirstRep().setCode(updatedPatient.getMaritalStatus());
             patient.setMaritalStatus(codeableConcept);
@@ -94,7 +93,7 @@ public class FhirService {
             Attachment attachment = new Attachment();
             attachment.setData(Base64.getDecoder().decode(updatedPatient.getPhoto()));
             patient.setPhoto(List.of(attachment));
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         return patient;
@@ -104,9 +103,9 @@ public class FhirService {
         AppUser user = userService.getUserFromToken(token);
         String userRole = user.getRole().getName();
         String userId = user.getId().toString();
-        if(userRole.equals("ROLE_PRACTITIONER")){
+        if (userRole.equals("ROLE_PRACTITIONER")) {
             return fhirMapper.map(this.getPractitioner(userId));
-        }else if (userRole.equals("ROLE_PATIENT")){
+        } else if (userRole.equals("ROLE_PATIENT")) {
             return fhirMapper.map(this.getPatient(userId));
         }
         return new FhirUserDto();
@@ -114,8 +113,8 @@ public class FhirService {
 
     public void changeEmail(String id, String email) {
         Patient patient = getPatient(id);
-        for(ContactPoint telecom: patient.getTelecom()){
-            if(telecom.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)){
+        for (ContactPoint telecom : patient.getTelecom()) {
+            if (telecom.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)) {
                 telecom.setValue(email);
             }
         }
@@ -125,7 +124,7 @@ public class FhirService {
     public void updateUser(String token, FhirUserDto userDto) throws Exception {
         Patient patient = getPatientFromToken(token);
         String identifier = patient.getIdentifier().get(0).getValue();
-        if (!identifier.equals(userDto.getIdentifier())){
+        if (!identifier.equals(userDto.getIdentifier())) {
             throw new Exception("Unauthorized access");
         }
         Patient updatePatient = updatePatient(patient, userDto);

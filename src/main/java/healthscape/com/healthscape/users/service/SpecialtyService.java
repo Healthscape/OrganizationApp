@@ -1,6 +1,5 @@
 package healthscape.com.healthscape.users.service;
 
-import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import healthscape.com.healthscape.users.repo.SpecialtyRepo;
 import jakarta.transaction.Transactional;

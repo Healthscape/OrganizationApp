@@ -24,33 +24,13 @@ public class FabricUser implements User, Serializable {
         this.mspId = mspId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public void setAffiliation(String affiliation) {
-        this.affiliation = affiliation;
-    }
-
-    public void setEnrollment(Enrollment enrollment) {
-        this.enrollment = enrollment;
-    }
-
-    public void setMspId(String mspId) {
-        this.mspId = mspId;
-    }
-
     @Override
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -58,9 +38,17 @@ public class FabricUser implements User, Serializable {
         return roles;
     }
 
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
+    }
+
     @Override
     public String getAccount() {
         return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 
     @Override
@@ -68,14 +56,26 @@ public class FabricUser implements User, Serializable {
         return affiliation;
     }
 
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
+    }
+
     @Override
     public Enrollment getEnrollment() {
         return enrollment;
     }
 
+    public void setEnrollment(Enrollment enrollment) {
+        this.enrollment = enrollment;
+    }
+
     @Override
     public String getMspId() {
         return mspId;
+    }
+
+    public void setMspId(String mspId) {
+        this.mspId = mspId;
     }
 
 }

@@ -10,12 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Base64;
 
 @RestController
 @RequestMapping(value = "/fabric", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -29,13 +24,13 @@ public class FabricController {
     private final TokenUtils tokenUtils;
 
 
-
     @GetMapping("/test")
     public ResponseEntity<?> test() throws CertificateException {
 
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/init")
     public ResponseEntity<?> initLedger(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 
@@ -48,6 +43,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/getAssetsByRange")
     public ResponseEntity<?> getAssetsByRange(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 
@@ -60,6 +56,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/createAsset")
     public ResponseEntity<?> createAsset(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String id) {
 
@@ -72,6 +69,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/readAsset")
     public ResponseEntity<?> readAsset(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String id) {
 
@@ -84,6 +82,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/assetExists")
     public ResponseEntity<?> assetExists(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String id) {
 
@@ -96,6 +95,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/deleteAsset")
     public ResponseEntity<?> deleteAsset(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String id) {
 
@@ -108,6 +108,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/transferAsset")
     public ResponseEntity<?> transferAsset(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String id, @RequestParam String newOwner) {
 
@@ -120,6 +121,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/transferAssetByColor")
     public ResponseEntity<?> transferAssetByColor(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String color, @RequestParam String newOwner) {
 
@@ -132,6 +134,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/queryAssetsByOwner")
     public ResponseEntity<?> queryAssetsByOwner(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String owner) {
 
@@ -144,6 +147,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/getAssetHistory")
     public ResponseEntity<?> getAssetHistory(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String id) {
 
@@ -156,6 +160,7 @@ public class FabricController {
         return ResponseEntity.ok().body("OK");
 
     }
+
     @GetMapping("/queryAssets")
     public ResponseEntity<?> queryAssets(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 

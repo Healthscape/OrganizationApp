@@ -15,16 +15,16 @@ import java.util.UUID;
 public class WalletUtil {
     private Wallet wallet;
 
-    public Wallet getWallet() {
-        return wallet;
-    }
-
     public WalletUtil() {
         try {
             wallet = Wallets.newFileSystemWallet(Paths.get(Config.WALLET_DIRECTORY));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public Wallet getWallet() {
+        return wallet;
     }
 
     public X509Identity getIdentity(UUID userIdentityId) throws IOException {

@@ -17,17 +17,17 @@ public class SpecialtyMapper {
         this.modelMapper = modelMapper;
     }
 
-    public List<SpecialtyDto> specialtiesToSpecialityDtos(List<Specialty> specialties){
+    public List<SpecialtyDto> specialtiesToSpecialityDtos(List<Specialty> specialties) {
         List<SpecialtyDto> specialtyDtos = new ArrayList<>();
-        for(Specialty specialty: specialties){
+        for (Specialty specialty : specialties) {
             specialtyDtos.add(specialtyToSpecialtyDto(specialty));
         }
         return specialtyDtos;
     }
 
-    public SpecialtyDto specialtyToSpecialtyDto(Specialty specialty){
+    public SpecialtyDto specialtyToSpecialtyDto(Specialty specialty) {
         SpecialtyDto specialtyDto = new SpecialtyDto();
-        modelMapper.map(specialty,specialtyDto);
+        modelMapper.map(specialty, specialtyDto);
         return specialtyDto;
     }
 }

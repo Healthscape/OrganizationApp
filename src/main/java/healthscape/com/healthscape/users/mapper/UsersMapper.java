@@ -17,9 +17,9 @@ public class UsersMapper {
         this.modelMapper = modelMapper;
     }
 
-    public List<UserDto> usersToUserDtos(List<AppUser> users){
+    public List<UserDto> usersToUserDtos(List<AppUser> users) {
         List<UserDto> userDtos = new ArrayList<>();
-        for(AppUser user: users){
+        for (AppUser user : users) {
             userDtos.add(userToUserDto(user));
         }
         return userDtos;
@@ -31,7 +31,8 @@ public class UsersMapper {
         userDto.setRole(appUser.getRole().getName());
         return userDto;
     }
-    public UserDto userToUserDto(AppUser appUser,byte[] photo) {
+
+    public UserDto userToUserDto(AppUser appUser, byte[] photo) {
         UserDto userDto = new UserDto();
         modelMapper.map(appUser, userDto);
         userDto.setRole(appUser.getRole().getName());
