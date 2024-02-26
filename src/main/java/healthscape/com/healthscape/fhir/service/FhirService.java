@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -62,38 +63,41 @@ public class FhirService {
         return getPractitioner(userService.getUserFromToken(token).getId().toString());
     }
 
-    public Patient updatePatient(String token, FhirUserDto updatedPatient) {
-        Patient patient = getPatientFromToken(token);
-
+    private Patient updatePatient(Patient patient, FhirUserDto updatedPatient) {
         patient.getName().remove(0);
         patient.addName().addGiven(updatedPatient.getName()).setFamily(updatedPatient.getSurname());
         patient.addTelecom().setSystem(ContactPoint.ContactPointSystem.PHONE).setValue(updatedPatient.getPhone());
 
-        String[] addressList = updatedPatient.getAddress().split(", ");
-        Address address = new Address();
-        StringType stringType = new StringType();
-        stringType.setValue(addressList[0]);
-        address.setLine(List.of(stringType));
-        address.setCity(addressList[1]);
-        address.setPostalCode(addressList[2]);
-        address.setCountry(addressList[3]);
-        patient.setAddress(List.of(address));
+        if(updatedPatient.getAddress() != null) {
+            String[] addressList = updatedPatient.getAddress().split(", ");
+            Address address = new Address();
+            StringType stringType = new StringType();
+            stringType.setValue(addressList[0]);
+            address.setLine(List.of(stringType));
+            address.setCity(addressList[1]);
+            address.setPostalCode(addressList[2]);
+            address.setCountry(addressList[3]);
+            patient.setAddress(List.of(address));
+        }
 
-        patient.setGender(Enumerations.AdministrativeGender.valueOf(updatedPatient.getGender()));
+        if(updatedPatient.getGender()!= null) {
+            patient.setGender(Enumerations.AdministrativeGender.valueOf(updatedPatient.getGender()));
+        }
         patient.setBirthDate(updatedPatient.getBirthDate());
-        CodeableConcept codeableConcept = new CodeableConcept();
-        codeableConcept.getCodingFirstRep().setCode(updatedPatient.getMaritalStatus());
-        patient.setMaritalStatus(codeableConcept);
+        if(updatedPatient.getMaritalStatus() != null) {
+            CodeableConcept codeableConcept = new CodeableConcept();
+            codeableConcept.getCodingFirstRep().setCode(updatedPatient.getMaritalStatus());
+            patient.setMaritalStatus(codeableConcept);
+        }
 
         try {
             Attachment attachment = new Attachment();
-            attachment.setData(updatedPatient.getPhoto());
+            attachment.setData(Base64.getDecoder().decode(updatedPatient.getPhoto()));
             patient.setPhoto(List.of(attachment));
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
-        MethodOutcome methodOutcome = this.fhirClient.update().resource("Patient").withId(patient.getId()).execute();
-        return (Patient) methodOutcome.getResource();
+        return patient;
     }
 
     public FhirUserDto getUserFromToken(String token) {
@@ -106,5 +110,26 @@ public class FhirService {
             return fhirMapper.map(this.getPatient(userId));
         }
         return new FhirUserDto();
+    }
+
+    public void changeEmail(String id, String email) {
+        Patient patient = getPatient(id);
+        for(ContactPoint telecom: patient.getTelecom()){
+            if(telecom.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)){
+                telecom.setValue(email);
+            }
+        }
+        this.fhirClient.update().resource(patient).withId(patient.getId()).execute();
+    }
+
+    public void updateUser(String token, FhirUserDto userDto) throws Exception {
+        Patient patient = getPatientFromToken(token);
+        String identifier = patient.getIdentifier().get(0).getValue();
+        if (!identifier.equals(userDto.getIdentifier())){
+            throw new Exception("Unauthorized access");
+        }
+        Patient updatePatient = updatePatient(patient, userDto);
+        this.fhirClient.update().resource(updatePatient).withId(patient.getId()).execute();
+
     }
 }

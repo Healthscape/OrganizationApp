@@ -1,8 +1,12 @@
 package healthscape.com.healthscape.users.api;
 
 import healthscape.com.healthscape.fabric.service.FabricUserService;
+import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.fhir.service.FhirService;
+import healthscape.com.healthscape.security.model.UserTokenState;
+import healthscape.com.healthscape.security.service.AuthenticationService;
 import healthscape.com.healthscape.shared.ResponseJson;
+import healthscape.com.healthscape.users.dto.PasswordDto;
 import healthscape.com.healthscape.users.dto.RegisterDto;
 import healthscape.com.healthscape.users.dto.UserDto;
 import healthscape.com.healthscape.users.mapper.UsersMapper;
@@ -28,6 +32,7 @@ import java.util.List;
 public class UserApi {
 
     private final UserService userService;
+    private final AuthenticationService authenticationService;
     private final FabricUserService fabricUserService;
     private final UsersMapper usersMapper;
     private final FhirService fhirService;
@@ -56,6 +61,42 @@ public class UserApi {
     @GetMapping("/me")
     public ResponseEntity<UserDto> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         return ResponseEntity.ok().body(usersMapper.userToUserDto(userService.getUserFromToken(token)));
+    }
+
+    @PutMapping("/email")
+    public ResponseEntity<?> changeEmail(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody String email) {
+        UserTokenState tokens;
+        try {
+            AppUser user = userService.changeEmail(token, email);
+            fhirService.changeEmail(user.getId().toString(), email);
+            tokens = authenticationService.getAuthentication(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+        }
+
+        return ResponseEntity.ok(tokens);
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody PasswordDto passwordDto) {
+        try{
+            userService.changePassword(token, passwordDto);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+        }
+
+        return ResponseEntity.ok(new ResponseJson(200, "OK"));
+    }
+
+    @PutMapping("")
+    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody FhirUserDto userDto) {
+        try{
+            fhirService.updateUser(token, userDto);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+        }
+
+        return ResponseEntity.ok().body(ResponseEntity.ok().body(new ResponseJson(200, "OK")));
     }
 
 }

@@ -2,6 +2,7 @@ package healthscape.com.healthscape.users.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import healthscape.com.healthscape.security.util.TokenUtils;
+import healthscape.com.healthscape.users.dto.PasswordDto;
 import healthscape.com.healthscape.users.dto.RegisterDto;
 import healthscape.com.healthscape.users.dto.UserDto;
 import healthscape.com.healthscape.users.mapper.UsersMapper;
@@ -90,5 +91,31 @@ public class UserService implements UserDetailsService {
     public List<AppUser> getUsers() {
         log.info("Get all users");
         return userRepo.findAll();
+    }
+
+    public void changePassword(String token, PasswordDto passwordDto) throws Exception {
+        AppUser user = getUserFromToken(token);
+        if(!passwordEncoder.matches(passwordDto.getOldPassword(), user.getPassword())){
+            throw new Exception("Entered old password does not match with password in system.");
+        }
+
+        if(!passwordDto.getNewPassword().equals(passwordDto.getConfirmPassword())){
+            throw new Exception("Entered new password and confirm password does not match.");
+
+        }
+
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        userRepo.save(user);
+    }
+
+    public AppUser changeEmail(String token, String email) throws Exception {
+        AppUser user = getUserFromToken(token);
+        if(userRepo.findByEmail(email) != null){
+            throw new Exception("Email already exists.");
+        }
+
+        user.setEmail(email);
+        userRepo.save(user);
+        return user;
     }
 }

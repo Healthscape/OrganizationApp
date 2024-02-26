@@ -19,7 +19,7 @@ public class FhirUserDto {
     private String gender;
     private String address;
     private String maritalStatus;
-    private byte[] photo;
+    private String photo;
     private String phone;
     private String email;
     private String specialty;

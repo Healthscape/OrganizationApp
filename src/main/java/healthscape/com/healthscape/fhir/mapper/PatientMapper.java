@@ -8,6 +8,8 @@ import org.hl7.fhir.r4.model.codesystems.V3MaritalStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 @Component
@@ -21,12 +23,17 @@ public class PatientMapper {
         fhirUserDto.setName(patient.getName().get(0).getGiven().get(0).getValue());
         fhirUserDto.setSurname(patient.getName().get(0).getFamily());
         fhirUserDto.setGender(patient.getGender().toString());
-        fhirUserDto.setMaritalStatus(patient.getMaritalStatus().getCodingFirstRep().getDisplay());
+        if(!patient.getMaritalStatus().getCoding().isEmpty()){
+            fhirUserDto.setMaritalStatus(patient.getMaritalStatus().getCoding().get(0).getCode());
+        }else{
+            fhirUserDto.setMaritalStatus("NULL");
+        }
+        fhirUserDto.setBirthDate(patient.getBirthDate());
         if(!patient.getAddress().isEmpty()){
             Address address = patient.getAddress().get(0);
-            fhirUserDto.setAddress(address.getLine().get(0) + ", " + address.getCity() + ", " + address.getPostalCode() + " " + address.getCountry());
+            fhirUserDto.setAddress(address.getLine().get(0) + ", " + address.getCity() + ", " + address.getPostalCode() + ", " + address.getCountry());
         }
-        fhirUserDto.setPhoto(patient.getPhoto().get(0).getData());
+        fhirUserDto.setPhoto(Base64.getEncoder().encodeToString(patient.getPhoto().get(0).getData()));
         for(ContactPoint point: patient.getTelecom()){
             if(point.getSystem().equals(ContactPoint.ContactPointSystem.PHONE)) {
                 fhirUserDto.setPhone(point.getValue());
@@ -54,7 +61,7 @@ public class PatientMapper {
 
         patient.setGender(Enumerations.AdministrativeGender.UNKNOWN);
         CodeableConcept codeableConcept = new CodeableConcept();
-        codeableConcept.getCodingFirstRep().setCode(V3MaritalStatus.A.toCode());
+        codeableConcept.getCodingFirstRep().setCode(V3MaritalStatus.NULL.toCode());
         patient.setMaritalStatus(codeableConcept);
         Address address = new Address();
         StringType stringType = new StringType();

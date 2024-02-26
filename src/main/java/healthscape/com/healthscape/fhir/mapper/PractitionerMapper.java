@@ -8,6 +8,7 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -49,7 +50,7 @@ public class PractitionerMapper {
         fhirUserDto.setName(user.getName().get(0).getGiven().get(0).getValue());
         fhirUserDto.setSurname(user.getName().get(0).getFamily());
         fhirUserDto.setGender(user.getGender().toString());
-        fhirUserDto.setPhoto(user.getPhoto().get(0).getData());
+        fhirUserDto.setPhoto(Arrays.toString(user.getPhoto().get(0).getData()));
         for(ContactPoint point: user.getTelecom()){
             if(point.getSystem().equals(ContactPoint.ContactPointSystem.PHONE)) {
                 fhirUserDto.setPhone(point.getValue());
