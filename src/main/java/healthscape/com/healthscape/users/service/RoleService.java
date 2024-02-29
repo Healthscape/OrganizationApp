@@ -21,8 +21,4 @@ public class RoleService {
         return roleRepo.getByName(name);
     }
 
-    public List<String> getAllPermissionsForRole(Role role) {
-        return role.getPermissionNames();
-    }
-
 }

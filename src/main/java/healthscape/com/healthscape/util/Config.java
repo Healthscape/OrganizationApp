@@ -1,9 +1,7 @@
 package healthscape.com.healthscape.util;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -29,10 +27,11 @@ public class Config {
     public static final Path ORG_CA_CERT_PATH = Paths.get(CRYPTO_PATH + "/ca/ca.org1.example.com-cert.pem");
     public static final String WALLET_DIRECTORY = "wallet";
     public static final String ADMIN_IDENTITY_ID = "admin";
-    public static String ADMIN_ID = "admin";
+    public static final String CA_HOST = System.getenv().getOrDefault("CA_HOST", "localhost");
     public static final String ADMIN_PASSWORD = "adminpw";
     public static final String AFFILIATION = "org1";
     public static final String NETWORK_CONFIG_PATH = Config.CRYPTO_PATH + "/connection-org1.yaml";
+    public static String ADMIN_ID = "admin";
 
     public static void setAdminId(String id) {
         ADMIN_ID = id;

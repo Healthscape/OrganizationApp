@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -29,13 +30,14 @@ public class AdminApi {
     private final UsersMapper usersMapper;
 
     @PostMapping("/practitioner")
+    @PreAuthorize("hasAuthority('register_practitioner')")
     public ResponseEntity<?> registerPractitioner(@RequestBody RegisterPractitionerDto user) {
         AppUser appUser = userService.register(user, "ROLE_PRACTITIONER");
-        byte[] photo;
+        byte[] photo = new byte[0];
         try {
             // TODO: uncomment
-            // fabricUserService.registerUser(appUser);
-            photo = fhirService.registerPractitioner(appUser, user.specialty);
+            fabricUserService.registerUser(appUser);
+            //            photo = fhirService.registerPractitioner(appUser, user.specialty);
         } catch (Exception e) {
             userService.deleteUser(appUser);
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));

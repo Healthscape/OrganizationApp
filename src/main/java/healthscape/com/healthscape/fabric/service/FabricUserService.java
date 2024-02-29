@@ -29,10 +29,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +39,16 @@ public class FabricUserService {
 
     private final WalletUtil walletUtil;
     private final UserService userService;
+
+    private static HFCAClient createCaClient() throws MalformedURLException, CryptoException, InvalidArgumentException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Properties props = new Properties();
+        props.put("pemFile", Config.ORG_CA_CERT_PATH.toString());
+        props.put("allowAllHostNames", "true");
+        HFCAClient caClient = HFCAClient.createNewInstance(Config.CA_URL, props);
+        CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
+        caClient.setCryptoSuite(cryptoSuite);
+        return caClient;
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
@@ -63,7 +70,7 @@ public class FabricUserService {
         HFCAClient caClient = createCaClient();
         userService.registerAdmin();
         final EnrollmentRequest enrollmentRequestTLS = new EnrollmentRequest();
-        enrollmentRequestTLS.addHost("localhost");
+        enrollmentRequestTLS.addHost(Config.CA_HOST);
         enrollmentRequestTLS.setProfile("tls");
         Enrollment enrollment = caClient.enroll(Config.ADMIN_IDENTITY_ID, Config.ADMIN_PASSWORD, enrollmentRequestTLS);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
@@ -106,16 +113,6 @@ public class FabricUserService {
         X509Identity adminIdentity = walletUtil.getAdminIdentity();
         Enrollment adminEnrolment = new FabricEnrollment(adminIdentity.getPrivateKey(), Identities.toPemString(adminIdentity.getCertificate()));
         return new FabricUser("admin", null, null, "org1.department1", adminEnrolment, "Org1MSP");
-    }
-
-    private static HFCAClient createCaClient() throws MalformedURLException, CryptoException, InvalidArgumentException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        Properties props = new Properties();
-        props.put("pemFile", Config.ORG_CA_CERT_PATH.toString());
-        props.put("allowAllHostNames", "true");
-        HFCAClient caClient = HFCAClient.createNewInstance(Config.CA_URL, props);
-        CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
-        caClient.setCryptoSuite(cryptoSuite);
-        return caClient;
     }
 
 }

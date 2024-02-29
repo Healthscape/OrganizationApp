@@ -46,11 +46,11 @@ public class UserApi {
     @PostMapping("")
     public ResponseEntity<?> registerUser(@RequestBody RegisterDto user) {
         AppUser appUser = userService.register(user, "ROLE_PATIENT");
-        byte[] photo;
+        byte[] photo = new byte[0];
         try {
             // TODO: uncomment
-            //           fabricUserService.registerUser(appUser);
-            photo = fhirService.registerPatient(appUser, user.getIdentifier());
+            fabricUserService.registerUser(appUser);
+            //            photo = fhirService.registerPatient(appUser, user.getIdentifier());
         } catch (Exception e) {
             userService.deleteUser(appUser);
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));

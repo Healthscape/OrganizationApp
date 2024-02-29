@@ -2,7 +2,6 @@ package healthscape.com.healthscape.fabric.service;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import healthscape.com.healthscape.fabric.model.Asset;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
@@ -12,12 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.*;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -26,14 +24,14 @@ import java.util.List;
 @Transactional
 public class FabricTransactionService {
 
-    private final UserService userService;
-
     static {
         System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
     }
 
+    private final UserService userService;
+
     private Contract getContract(String email) throws Exception {
-        if(email.isBlank() || email.isEmpty()){
+        if (email.isBlank() || email.isEmpty()) {
             System.out.println("Email cannot be empty.");
             throw new Exception("Email cannot be empty.");
         }
@@ -62,6 +60,16 @@ public class FabricTransactionService {
         System.out.println("result: " + new String(result));
     }
 
+    public void test(String email) throws Exception {
+
+        Contract contract = getContract(email);
+        byte[] result;
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction:QueryAssets assets of size 15");
+        result = contract.evaluateTransaction("CreatePatientRecord");
+        System.out.println("result: " + new String(result));
+    }
+
     public void getAssetHistory(String email, String id) throws Exception {
         Contract contract = getContract(email);
         byte[] result;
@@ -84,7 +92,7 @@ public class FabricTransactionService {
         Contract contract = getContract(email);
         System.out.println("\n");
         System.out.println("Submit Transaction: TransferAssetByColor " + color + " assets > newOwner " + newOwner);
-//        contract.submitTransaction("TransferAssetByColor", "yellow", "Michel");
+        //        contract.submitTransaction("TransferAssetByColor", "yellow", "Michel");
         contract.submitTransaction("TransferAssetByColor", color, newOwner);
     }
 
@@ -93,7 +101,7 @@ public class FabricTransactionService {
         System.out.println("\n");
         System.out.println("Submit Transaction: TransferAsset " + id + " to owner " + newOwner);
         // TransferAsset transfers an asset with given ID to new owner Tom
-//        contract.submitTransaction("TransferAsset", "asset2", "Tom");
+        //        contract.submitTransaction("TransferAsset", "asset2", "Tom");
         contract.submitTransaction("TransferAsset", id, newOwner);
     }
 
@@ -103,6 +111,7 @@ public class FabricTransactionService {
         System.out.println("Submit Transaction: DeleteAsset " + id);
         contract.submitTransaction("DeleteAsset", id);
     }
+
     public void assetExists(String email, String id) throws Exception {
         Contract contract = getContract(email);
         byte[] result;
@@ -147,9 +156,19 @@ public class FabricTransactionService {
         contract.submitTransaction("InitLedger");
     }
 
-    private static List<Asset> deserializeJson(String jsonString) {
-        Gson gson = new Gson();
-        Type myObjectType = new TypeToken<List<Asset>>(){}.getType();
-        return gson.fromJson(jsonString, myObjectType);
+    public String getAccessRequest(String email, String userId) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Evaluate Transaction: GetAccessRequest returns access request if it exists.");
+        byte[] result = contract.evaluateTransaction("GetAccessRequest", userId);
+        return new String(result);
+    }
+
+    public String sendAccessRequest(String email, String userId) throws Exception {
+        Contract contract = getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: CreateAccessRequest creates new access request if it does not exist.");
+        byte[] result = contract.submitTransaction("CreateAccessRequest", userId, String.valueOf(new Date().getTime()));
+        return new String(result);
     }
 }

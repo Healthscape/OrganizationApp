@@ -12,4 +12,5 @@ public interface UserRepo extends JpaRepository<AppUser, UUID> {
     AppUser findByEmail(String email);
 
     AppUser findAppUserByRole(Role role);
+
 }

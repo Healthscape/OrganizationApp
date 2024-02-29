@@ -23,12 +23,24 @@ public class WalletUtil {
         }
     }
 
-    public Wallet getWallet() {
-        return wallet;
-    }
-
     public X509Identity getIdentity(UUID userIdentityId) throws IOException {
         return (X509Identity) wallet.get(userIdentityId.toString());
+    }
+
+    public String getRoleFromIdentity(UUID userIdentityId) throws IOException {
+        X509Identity identity = getIdentity(userIdentityId);
+        String roleStr = new String(identity.getCertificate().getExtensionValue("1.2.3.4.5.6.7.8.1"));
+        int startIndex = roleStr.indexOf("ROLE_");
+        int endIndex = roleStr.indexOf("\"", startIndex);
+        return roleStr.substring(startIndex, endIndex);
+    }
+
+    public String getCNFromIdentity(UUID userIdentityId) throws IOException {
+        X509Identity identity = getIdentity(userIdentityId);
+        String subject = identity.getCertificate().getSubjectX500Principal().getName();
+        String[] strings = subject.split(",");
+        String[] cnStr = strings[0].split("=");
+        return cnStr[1];
     }
 
     public X509Identity getAdminIdentity() throws IOException {

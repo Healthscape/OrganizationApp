@@ -20,13 +20,4 @@ public class UserDto {
     private byte[] image;
     private String role;
     private Timestamp dateCreated;
-
-    public UserDto(AppUser user) {
-        this.name = user.getName();
-        this.surname = user.getSurname();
-        this.email = user.getEmail();
-        this.image = new byte[' '];
-        this.role = user.getRole().getName();
-        this.dateCreated = user.getDateCreated();
-    }
 }

@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -114,5 +116,10 @@ public class UserService implements UserDetailsService {
         user.setEmail(email);
         userRepo.save(user);
         return user;
+    }
+
+    public AppUser getUserById(String userId) {
+        Optional<AppUser> user = userRepo.findById(UUID.fromString(userId));
+        return user.orElse(null);
     }
 }

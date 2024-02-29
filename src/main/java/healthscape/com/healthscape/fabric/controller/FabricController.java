@@ -10,8 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.cert.CertificateException;
-
 @RestController
 @RequestMapping(value = "/fabric", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
@@ -25,8 +23,13 @@ public class FabricController {
 
 
     @GetMapping("/test")
-    public ResponseEntity<?> test() throws CertificateException {
-
+    public ResponseEntity<?> test(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        try {
+            String email = tokenUtils.getEmailFromToken(token);
+            fabricTransactionService.test(email);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         return ResponseEntity.ok().body("OK");
 
     }

@@ -3,6 +3,7 @@ package healthscape.com.healthscape.fhir.config;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -22,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 
 @Component
 @AllArgsConstructor
+@Getter
 public class FhirConfig {
 
     private final ApplicationContext context;

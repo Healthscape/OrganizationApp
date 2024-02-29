@@ -2,6 +2,7 @@ package healthscape.com.healthscape.fhir.service;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import healthscape.com.healthscape.fhir.config.FhirConfig;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.fhir.mapper.FhirMapper;
 import healthscape.com.healthscape.fhir.mapper.PatientMapper;
@@ -27,22 +28,37 @@ public class FhirService {
     private final SpecialtyService specialtyService;
     private final UserService userService;
     private final FhirMapper fhirMapper;
+    private final FhirConfig fhirConfig;
 
     public void getMetadata() {
         CapabilityStatement conf = fhirClient.capabilities().ofType(CapabilityStatement.class).execute();
         System.out.println(conf.getDescriptionElement().getValue());
     }
 
-    public byte[] registerPatient(AppUser appUser, String ssn) {
-        Patient patient = patientMapper.appUserToFhirPatient(appUser, ssn);
-        MethodOutcome methodOutcome = this.fhirClient.update().resource(patient).execute();
-        return ((Patient) methodOutcome.getResource()).getPhoto().get(0).getData();
+    public Patient registerPatient(AppUser appUser, String personalId) {
+        Patient patientData = getPatientWithPersonalId(personalId);
+        if (patientData != null) {
+            Patient patient = patientMapper.appUserToFhirPatient(appUser, personalId);
+            MethodOutcome methodOutcome = this.fhirClient.update().resource(patient).execute();
+            return (Patient) methodOutcome.getResource();
+        } else {
+            return null;
+        }
+    }
+
+    public Patient getPatientWithPersonalId(String personalId) {
+        Bundle bundle = this.fhirClient.search().forResource(Patient.class).where(Patient.IDENTIFIER.exactly().systemAndValues("http://hl7.org/fhir/sid/us-ssn", personalId)).returnBundle(Bundle.class).execute();
+        System.out.println(fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
+        for (Bundle.BundleEntryComponent e : bundle.getEntry()) {
+            return (Patient) e.getResource();
+        }
+        return null;
     }
 
     public byte[] registerPractitioner(AppUser appUser, String specialtyCode) {
         Specialty specialty = this.specialtyService.getByCode(specialtyCode);
         Practitioner practitioner = practitionerMapper.appUserToFhirPractitioner(appUser, specialty);
-        MethodOutcome methodOutcome = this.fhirClient.create().resource(practitioner).execute();
+        MethodOutcome methodOutcome = this.fhirClient.update().resource(practitioner).execute();
         return ((Practitioner) methodOutcome.getResource()).getPhoto().get(0).getData();
     }
 

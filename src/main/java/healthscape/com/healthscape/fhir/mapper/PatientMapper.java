@@ -44,14 +44,15 @@ public class PatientMapper {
         return fhirUserDto;
     }
 
-    public Patient appUserToFhirPatient(AppUser appUser, String ssn) {
+    public Patient appUserToFhirPatient(AppUser appUser, String personalId) {
         Patient patient = new Patient();
 
         patient.setId(appUser.getId().toString());
 
         Identifier identifier = new Identifier();
+        identifier.setSystem("http://hl7.org/fhir/sid/us-ssn");
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(ssn);
+        identifier.setValue(personalId);
         patient.setIdentifier(List.of(identifier));
 
         patient.addName().addGiven(appUser.getName()).setFamily(appUser.getSurname());
