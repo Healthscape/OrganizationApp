@@ -1,18 +1,23 @@
 package healthscape.com.healthscape.fhir.mapper;
 
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
+import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
-import org.apache.commons.compress.utils.IOUtils;
 import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.model.codesystems.V3MaritalStatus;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
-import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class PatientMapper {
+
+    private final FileService fileService;
+
+    public PatientMapper(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     public FhirUserDto fhirPatientToFhirUserDto(Patient patient) {
         FhirUserDto fhirUserDto = new FhirUserDto();
@@ -32,7 +37,11 @@ public class PatientMapper {
             Address address = patient.getAddress().get(0);
             fhirUserDto.setAddress(address.getLine().get(0) + ", " + address.getCity() + ", " + address.getPostalCode() + ", " + address.getCountry());
         }
-        fhirUserDto.setPhoto(Base64.getEncoder().encodeToString(patient.getPhoto().get(0).getData()));
+        try{
+            fhirUserDto.setImage(fileService.getImage(patient.getPhoto().get(0).getUrl()));
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
         for (ContactPoint point : patient.getTelecom()) {
             if (point.getSystem().equals(ContactPoint.ContactPointSystem.PHONE)) {
                 fhirUserDto.setPhone(point.getValue());
@@ -73,11 +82,9 @@ public class PatientMapper {
         patient.setAddress(List.of(address));
 
         try {
-            InputStream in = getClass().getResourceAsStream("/images/patient-default.png");
-            byte[] byteArray = IOUtils.toByteArray(in);
-            in.close();
             Attachment attachment = new Attachment();
-            attachment.setData(byteArray);
+            attachment.setData(fileService.getImage(appUser.getImagePath()));
+            attachment.setUrl(appUser.getImagePath());
             patient.setPhoto(List.of(attachment));
         } catch (Exception e) {
             System.out.println(e.getMessage());

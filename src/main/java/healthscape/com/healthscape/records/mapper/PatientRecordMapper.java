@@ -1,6 +1,7 @@
 package healthscape.com.healthscape.records.mapper;
 
 import healthscape.com.healthscape.records.dtos.PatientRecordPreview;
+import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Patient;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +12,7 @@ import java.util.Date;
 public class PatientRecordMapper {
 
     public PatientRecordPreview mapToPreview(Patient patient) {
-        String id = patient.getId();
+        String id = patient.getIdElement().getIdPart();
         String personalId = patient.getIdentifier().get(0).getValue();
         String name = patient.getName().get(0).getGiven().get(0).getValue();
         String surname = patient.getName().get(0).getFamily();

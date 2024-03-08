@@ -1,5 +1,6 @@
-package healthscape.com.healthscape.accessRequests.model;
+package healthscape.com.healthscape.accessRequests.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,8 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccessRequestModel {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ChaincodeAccessRequestDto {
     private String requestId;
     private String patientId;
     private String practitionerId;
@@ -20,5 +22,4 @@ public class AccessRequestModel {
     private String decision;
     private String availableFrom;
     private String availableUntil;
-    private String[] itemsAccess;
 }

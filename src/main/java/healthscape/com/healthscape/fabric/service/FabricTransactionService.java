@@ -1,7 +1,5 @@
 package healthscape.com.healthscape.fabric.service;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
@@ -11,12 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.*;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +19,9 @@ import java.util.List;
 @Transactional
 public class FabricTransactionService {
 
-    static {
-        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
-    }
-
     private final UserService userService;
 
-    private Contract getContract(String email) throws Exception {
+    public Contract getContract(String email) throws Exception {
         if (email.isBlank() || email.isEmpty()) {
             System.out.println("Email cannot be empty.");
             throw new Exception("Email cannot be empty.");
@@ -154,21 +145,5 @@ public class FabricTransactionService {
         System.out.println("\n");
         System.out.println("Submit Transaction: InitLedger creates the initial set of assets on the ledger.");
         contract.submitTransaction("InitLedger");
-    }
-
-    public String getAccessRequest(String email, String userId) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction: GetAccessRequest returns access request if it exists.");
-        byte[] result = contract.evaluateTransaction("GetAccessRequest", userId);
-        return new String(result);
-    }
-
-    public String sendAccessRequest(String email, String userId) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: CreateAccessRequest creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("CreateAccessRequest", userId, String.valueOf(new Date().getTime()));
-        return new String(result);
     }
 }

@@ -20,7 +20,7 @@ public class PatientRecordApi {
 
     @GetMapping("/{personalId}")
     @PreAuthorize("hasAuthority('find_record_with_personalId')")
-    private ResponseEntity<?> findRecordWithPersonalId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String personalId) {
+    public ResponseEntity<?> findRecordWithPersonalId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String personalId) {
         return ResponseEntity.ok(this.patientRecordService.findRecordWithPersonalId(token, personalId));
     }
 }

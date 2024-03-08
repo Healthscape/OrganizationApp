@@ -2,6 +2,9 @@ package healthscape.com.healthscape.fhir.service;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import healthscape.com.healthscape.fabric.dto.PatientRecordDto;
 import healthscape.com.healthscape.fhir.config.FhirConfig;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.fhir.mapper.FhirMapper;
@@ -11,11 +14,12 @@ import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import healthscape.com.healthscape.users.service.SpecialtyService;
 import healthscape.com.healthscape.users.service.UserService;
+import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.HashUtil;
 import lombok.RequiredArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -107,7 +111,8 @@ public class FhirService {
 
         try {
             Attachment attachment = new Attachment();
-            attachment.setData(Base64.getDecoder().decode(updatedPatient.getPhoto()));
+            attachment.setData(updatedPatient.getImage());
+            attachment.setUrl(updatedPatient.getImagePath());
             patient.setPhoto(List.of(attachment));
         } catch (Exception e) {
             System.out.println(e.getMessage());

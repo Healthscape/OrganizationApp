@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,11 +14,16 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AccessRequestDto {
     private String requestId;
+    private String patientId;
+    private String practitionerId;
+    private String patient;
+    private String practitioner;
+    private byte[] patientImage;
+    private byte[] practitionerImage;
+    private String specialty;
     private Date lastUpdated;
     private Boolean reviewed;
-    private String decisionType;
     private String decision;
     private String availableFrom;
     private String availableUntil;
-    private String[] itemsAccess;
 }

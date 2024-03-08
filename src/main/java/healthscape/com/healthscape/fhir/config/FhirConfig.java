@@ -2,6 +2,7 @@ package healthscape.com.healthscape.fhir.config;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import healthscape.com.healthscape.util.Config;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -47,7 +48,7 @@ public class FhirConfig {
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslFactory).build();
         fhirContext.getRestfulClientFactory().setHttpClient(httpClient);
 
-        return fhirContext.newRestfulGenericClient("https://127.0.0.1:443/fhir");
+        return fhirContext.newRestfulGenericClient(Config.FHIR_SERVER);
     }
 }
 

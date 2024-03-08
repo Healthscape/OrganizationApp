@@ -8,56 +8,79 @@ INSERT INTO role (id, name)
 VALUES (4, 'ROLE_ADMIN');
 
 /* ************************************ PERMISSIONS ************************************ */
-/* ========= ADMIN ========= */
 INSERT INTO permission
 VALUES (1, 'get_all_users');
-INSERT INTO role_permissions
-VALUES (1, 4); /* admin <- get_all_users*/
-
 INSERT INTO permission
 VALUES (2, 'register_practitioner');
-INSERT INTO role_permissions
-VALUES (2, 4);
-/* admin <- register_practitioner*/
-
-/* ====== PRACTITIONER ====== */
 INSERT INTO permission
 VALUES (3, 'find_record_with_personalId');
-INSERT INTO role_permissions
-VALUES (3, 3); /* practitioner <- find_record_with_personalId*/
-
 INSERT INTO permission
-VALUES (4, 'find_access_request');
-INSERT INTO role_permissions
-VALUES (4, 3); /* practitioner <- find_access_request*/
-
+VALUES (4, 'get_access_request_for_user');
 INSERT INTO permission
 VALUES (5, 'send_access_request');
+INSERT INTO permission
+VALUES (6, 'get_access_request_for_user');
+INSERT INTO permission
+VALUES (7, 'get_access_requests_by_reviewed');
+INSERT INTO permission
+VALUES (8, 'review_access_request');
+INSERT INTO permission
+VALUES (9, 'get_recent_requests');
+INSERT INTO permission
+VALUES (10, 'get_access_requests_by_status');
+INSERT INTO permission
+VALUES (11, 'get_request_history');
+
+/* ========= ADMIN ========= */
 INSERT INTO role_permissions
-VALUES (5, 3);
-/* practitioner <- send_access_request*/
+VALUES (1, 4); /* admin <- get_all_users*/
+INSERT INTO role_permissions
+VALUES (2, 4);/* admin <- register_practitioner*/
+
+/* ====== PRACTITIONER ====== */
+INSERT INTO role_permissions
+VALUES (3, 3); /* practitioner <- find_record_with_personalId*/
+INSERT INTO role_permissions
+VALUES (4, 3); /* practitioner <- find_access_request*/
+INSERT INTO role_permissions
+VALUES (5, 3);/* practitioner <- send_access_request*/
+INSERT INTO role_permissions
+VALUES (7, 3);/* practitioner <- get_access_requests_by_reviewed*/
+INSERT INTO role_permissions
+VALUES (9, 3);/* practitioner <- get_recent_requests*/
+INSERT INTO role_permissions
+VALUES (10, 3);/* practitioner <- get_access_requests_by_status*/
+INSERT INTO role_permissions
+VALUES (11, 3);/* practitioner <- get_request_history*/
 
 /* ========= PATIENT ========= */
-INSERT INTO permission
-VALUES (6, 'find_access_request');
 INSERT INTO role_permissions
-VALUES (6, 2);
-/* patient <- find_access_request*/
+VALUES (6, 2);/* patient <- find_access_request*/
+INSERT INTO role_permissions
+VALUES (7, 2);/* patient <- get_access_requests_by_reviewed*/
+INSERT INTO role_permissions
+VALUES (8, 2);/* patient <- review_access_request*/
+INSERT INTO role_permissions
+VALUES (9, 2);/* patient <- get_recent_requests*/
+INSERT INTO role_permissions
+VALUES (10, 2);/* patient <- get_access_requests_by_status*/
+INSERT INTO role_permissions
+VALUES (11, 2);/* patient <- get_request_history*/
 
 /* ************************************* SPECIALTY ************************************* */
 INSERT INTO specialty
-VALUES (1, 'NEURO', 'Neurology');
+VALUES (1, 'NEURO', 'Neurologist');
 INSERT INTO specialty
-VALUES (2, 'PATHO', 'Pathology');
+VALUES (2, 'PATHO', 'Pathologist');
 INSERT INTO specialty
-VALUES (3, 'PEDS', 'Pediatrics');
+VALUES (3, 'PEDS', 'Pediatrician');
 INSERT INTO specialty
-VALUES (4, 'CARDIO', 'Cardiology');
+VALUES (4, 'CARDIO', 'Cardiologist');
 INSERT INTO specialty
-VALUES (5, 'ORTHO', 'Orthopedics');
+VALUES (5, 'ORTHO', 'Orthopediatrician');
 INSERT INTO specialty
-VALUES (6, 'PULMONO', 'Pulmonology');
+VALUES (6, 'PULMONO', 'Pulmonologist');
 INSERT INTO specialty
-VALUES (7, 'GYN', 'Gynaecology');
+VALUES (7, 'GYN', 'Gynaecologist');
 INSERT INTO specialty
-VALUES (8, 'DERM', 'Dermatology');
+VALUES (8, 'DERM', 'Dermatologist');

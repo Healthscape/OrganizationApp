@@ -38,6 +38,12 @@ public class AppUser implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "image_path")
+    private String imagePath;
+
+    @Column(name = "specialty")
+    private String specialty;
+
     @ManyToOne(targetEntity = Role.class, cascade = CascadeType.MERGE)
     private Role role;
 

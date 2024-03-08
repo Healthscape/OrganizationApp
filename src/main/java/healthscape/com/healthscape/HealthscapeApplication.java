@@ -13,6 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class HealthscapeApplication {
 
+
+    static {
+        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(HealthscapeApplication.class, args);
     }

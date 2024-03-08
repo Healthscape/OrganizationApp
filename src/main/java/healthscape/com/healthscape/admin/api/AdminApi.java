@@ -33,15 +33,15 @@ public class AdminApi {
     @PreAuthorize("hasAuthority('register_practitioner')")
     public ResponseEntity<?> registerPractitioner(@RequestBody RegisterPractitionerDto user) {
         AppUser appUser = userService.register(user, "ROLE_PRACTITIONER");
-        byte[] photo = new byte[0];
+        appUser.setSpecialty(user.getSpecialty());
         try {
+            fhirService.registerPractitioner(appUser, user.specialty);
             // TODO: uncomment
             fabricUserService.registerUser(appUser);
-            //            photo = fhirService.registerPractitioner(appUser, user.specialty);
         } catch (Exception e) {
             userService.deleteUser(appUser);
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
         }
-        return ResponseEntity.created(URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString())).body(usersMapper.userToUserDto(appUser, photo));
+        return ResponseEntity.created(URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString())).body(usersMapper.userToUserDto(appUser));
     }
 }

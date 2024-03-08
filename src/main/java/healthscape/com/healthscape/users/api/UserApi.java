@@ -1,8 +1,10 @@
 package healthscape.com.healthscape.users.api;
 
+import healthscape.com.healthscape.fabric.dto.PatientRecordDto;
 import healthscape.com.healthscape.fabric.service.FabricUserService;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.fhir.service.FhirService;
+import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.security.model.UserTokenState;
 import healthscape.com.healthscape.security.service.AuthenticationService;
 import healthscape.com.healthscape.shared.ResponseJson;
@@ -19,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -36,6 +39,7 @@ public class UserApi {
     private final FabricUserService fabricUserService;
     private final UsersMapper usersMapper;
     private final FhirService fhirService;
+    private final FileService fileService;
 
     @GetMapping("")
     @PreAuthorize("hasAuthority('get_all_users')")
@@ -55,7 +59,21 @@ public class UserApi {
             userService.deleteUser(appUser);
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
         }
-        return ResponseEntity.created(URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString())).body(usersMapper.userToUserDto(appUser, photo));
+        return ResponseEntity.created(URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString())).body(usersMapper.userToUserDto(appUser));
+    }
+
+    @PutMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestPart("userDto") FhirUserDto userDto, @RequestPart("image") MultipartFile image) {
+        try {
+            String imagePath = fileService.saveImageToStorage(image);
+            userDto.setImagePath(imagePath);
+            userService.updateUser(token, userDto);
+            fhirService.updateUser(token, userDto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+        }
+
+        return ResponseEntity.ok().body(ResponseEntity.ok().body(new ResponseJson(200, "OK")));
     }
 
     @GetMapping("/me")
@@ -86,17 +104,6 @@ public class UserApi {
         }
 
         return ResponseEntity.ok(new ResponseJson(200, "OK"));
-    }
-
-    @PutMapping("")
-    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody FhirUserDto userDto) {
-        try {
-            fhirService.updateUser(token, userDto);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
-        }
-
-        return ResponseEntity.ok().body(ResponseEntity.ok().body(new ResponseJson(200, "OK")));
     }
 
 }

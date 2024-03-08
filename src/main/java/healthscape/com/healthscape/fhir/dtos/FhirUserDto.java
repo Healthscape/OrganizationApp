@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -19,7 +20,8 @@ public class FhirUserDto {
     private String gender;
     private String address;
     private String maritalStatus;
-    private String photo;
+    private byte[] image;
+    private String imagePath;
     private String phone;
     private String email;
     private String specialty;

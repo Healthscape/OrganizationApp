@@ -1,12 +1,15 @@
 package healthscape.com.healthscape.users.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
+import healthscape.com.healthscape.fhir.service.FhirService;
 import healthscape.com.healthscape.security.util.TokenUtils;
 import healthscape.com.healthscape.users.dto.PasswordDto;
 import healthscape.com.healthscape.users.dto.RegisterDto;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
 import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.file.service.FileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +57,11 @@ public class UserService implements UserDetailsService {
         AppUser appUser = objectMapper.convertValue(user, AppUser.class);
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         appUser.setRole(roleService.getByName(roleName));
+        if(roleName.equals("ROLE_PRACTITIONER")) {
+            appUser.setImagePath("practitioner-default.png");
+        }else if(roleName.equals("ROLE_PATIENT")){
+            appUser.setImagePath("patient-default.png");
+        }
         userRepo.save(appUser);
         return appUser;
     }
@@ -82,6 +90,7 @@ public class UserService implements UserDetailsService {
         appUser.setEmail(Config.ADMIN_IDENTITY_ID);
         appUser.setPassword(passwordEncoder.encode(Config.ADMIN_PASSWORD));
         appUser.setRole(roleService.getByName("ROLE_ADMIN"));
+        appUser.setImagePath("admin-default.png");
         AppUser admin = userRepo.save(appUser);
         Config.setAdminId(admin.getId().toString());
         return admin;
@@ -121,5 +130,13 @@ public class UserService implements UserDetailsService {
     public AppUser getUserById(String userId) {
         Optional<AppUser> user = userRepo.findById(UUID.fromString(userId));
         return user.orElse(null);
+    }
+
+    public void updateUser(String token, FhirUserDto userDto) {
+        AppUser user = getUserFromToken(token);
+        user.setName(userDto.getName());
+        user.setSurname(userDto.getSurname());
+        user.setImagePath(userDto.getImagePath());
+        userRepo.save(user);
     }
 }
