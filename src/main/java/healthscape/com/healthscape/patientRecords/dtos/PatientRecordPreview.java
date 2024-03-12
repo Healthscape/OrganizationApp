@@ -14,6 +14,6 @@ public class PatientRecordPreview {
     private String surname;
     private String personalId;
     private Date birthDate;
-    private String photo;
+    private String image;
     private String id;
 }

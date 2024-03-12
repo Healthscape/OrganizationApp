@@ -73,15 +73,21 @@ public class UserApi {
     }
 
     @PutMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestPart("userDto") FhirUserDto userDto, @RequestPart("image") MultipartFile image) {
+    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestPart("userDto") FhirUserDto userDto, @RequestPart("newImage") MultipartFile newImage) {
         String imagePath = null;
         try {
-            imagePath = fileService.saveImageToStorage(image);
-            userDto.setImagePath(imagePath);
+            if(!newImage.isEmpty()){
+                imagePath = fileService.saveImageToStorage(newImage);
+                userDto.setImagePath(imagePath);
+            }
             AppUser user = userService.getUserFromToken(token);
-            MyChaincodePatientRecordDto myChaincodePatientRecordDto = patientRecordService.getMyPatientRecord(user);
-            MyChaincodePatientRecordDto updatedMyPatientRecordDto = fhirService.updatePatient(userDto, myChaincodePatientRecordDto.getOfflineDataUrl());
-            patientRecordService.updateMyPatientRecord(user, updatedMyPatientRecordDto);
+            if(user.getRole().getName().equals("ROLE_PATIENT")){
+                MyChaincodePatientRecordDto myChaincodePatientRecordDto = patientRecordService.getMyPatientRecord(user);
+                MyChaincodePatientRecordDto updatedMyPatientRecordDto = fhirService.updatePatient(userDto, myChaincodePatientRecordDto.getOfflineDataUrl());
+                patientRecordService.updateMyPatientRecord(user, updatedMyPatientRecordDto);
+            }else if(user.getRole().getName().equals("ROLE_PRACTITIONER")){
+                fhirService.updatePractitioner(userDto, user.getId().toString());
+            }
             userService.updateUser(user, userDto, imagePath);
         } catch (IOException e) {
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
@@ -103,9 +109,13 @@ public class UserApi {
         UserTokenState tokens;
         try {
             AppUser user = userService.changeEmail(token, email);
-            MyChaincodePatientRecordDto myChaincodePatientRecordDto = patientRecordService.getMyPatientRecord(user);
-            MyChaincodePatientRecordDto updatedMyPatientRecordDto = fhirService.changeEmail(myChaincodePatientRecordDto.getOfflineDataUrl(), email);
-            patientRecordService.updateMyPatientRecord(user, updatedMyPatientRecordDto);
+            if(user.getRole().getName().equals("ROLE_PATIENT")){
+                MyChaincodePatientRecordDto myChaincodePatientRecordDto = patientRecordService.getMyPatientRecord(user);
+                MyChaincodePatientRecordDto updatedMyPatientRecordDto = fhirService.changeEmailPatient(myChaincodePatientRecordDto.getOfflineDataUrl(), email);
+                patientRecordService.updateMyPatientRecord(user, updatedMyPatientRecordDto);
+            }else if(user.getRole().getName().equals("ROLE_PRACTITIONER")){
+                fhirService.changeEmailPatient(user.getId().toString(), email);
+            }
             tokens = authenticationService.getAuthentication(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));

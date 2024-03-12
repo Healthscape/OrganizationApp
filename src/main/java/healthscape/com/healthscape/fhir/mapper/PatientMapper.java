@@ -3,6 +3,8 @@ package healthscape.com.healthscape.fhir.mapper;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
+import healthscape.com.healthscape.util.EncryptionUtil;
+import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.model.codesystems.V3MaritalStatus;
 import org.springframework.stereotype.Component;
@@ -12,18 +14,16 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
+@AllArgsConstructor
 public class PatientMapper {
 
     private final FileService fileService;
-
-    public PatientMapper(FileService fileService) {
-        this.fileService = fileService;
-    }
+    private final EncryptionUtil encryptionUtil;
 
     public FhirUserDto fhirPatientToFhirUserDto(Patient patient) {
         FhirUserDto fhirUserDto = new FhirUserDto();
 
-        fhirUserDto.setIdentifier(patient.getIdentifier().get(0).getValue());
+        fhirUserDto.setIdentifier(this.encryptionUtil.decrypt(patient.getIdentifier().get(0).getValue()));
 
         fhirUserDto.setName(patient.getName().get(0).getGiven().get(0).getValue());
         fhirUserDto.setSurname(patient.getName().get(0).getFamily());

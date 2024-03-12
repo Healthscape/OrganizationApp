@@ -110,7 +110,7 @@ public class FhirService {
         return null;
     }
 
-    public MyChaincodePatientRecordDto changeEmail(String offlineDataUrl, String email) {
+    public MyChaincodePatientRecordDto changeEmailPatient(String offlineDataUrl, String email) {
         Patient patient = getPatient(offlineDataUrl);
         for (ContactPoint telecom : patient.getTelecom()) {
             if (telecom.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)) {
@@ -121,10 +121,26 @@ public class FhirService {
         return getMyPatientRecordUpdateDto(methodOutcome, true);
     }
 
+    public void changeEmailPractitioner(String id, String email) {
+        Practitioner practitioner = getPractitioner(id);
+        for (ContactPoint telecom : practitioner.getTelecom()) {
+            if (telecom.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)) {
+                telecom.setValue(email);
+            }
+        }
+        this.fhirClient.update().resource(practitioner).execute();
+    }
+
     public MyChaincodePatientRecordDto updatePatient(FhirUserDto userDto, String offlineDataUrl) {
         Patient patient = getPatient(offlineDataUrl);
         Patient updatePatient = this.patientMapper.mapUpdatedToPatient(patient, userDto);
         MethodOutcome methodOutcome = this.fhirClient.update().resource(updatePatient).execute();
         return getMyPatientRecordUpdateDto(methodOutcome, true);
+    }
+
+    public void updatePractitioner(FhirUserDto userDto, String id) {
+        Practitioner practitioner = getPractitioner(id);
+        Practitioner updatePractitioner = this.practitionerMapper.mapUpdatedToPractitioner(practitioner, userDto);
+        this.fhirClient.update().resource(updatePractitioner).execute();
     }
 }
