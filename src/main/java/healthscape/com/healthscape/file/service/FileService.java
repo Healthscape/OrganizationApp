@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +22,7 @@ public class FileService {
 
     // Save image in a local directory
     public String saveImageToStorage(MultipartFile imageFile) throws IOException {
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+        String uniqueFileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
 
         Path uploadPath = Path.of(imageDirectory);
         Path filePath = uploadPath.resolve(uniqueFileName);
@@ -50,11 +49,13 @@ public class FileService {
     }
 
     // Delete an image
-    public String deleteImage(String imageName) throws IOException {
+    public String deleteImage(String imageName) {
         Path imagePath = Path.of(imageDirectory, imageName);
 
         if (Files.exists(imagePath)) {
-            Files.delete(imagePath);
+            try{
+                Files.delete(imagePath);
+            }catch (Exception ignored){}
             return "Success";
         } else {
             return "Failed"; // Handle missing images

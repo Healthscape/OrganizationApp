@@ -3,6 +3,7 @@ package healthscape.com.healthscape.fabric.service;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.util.EncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.nio.file.Paths;
 public class FabricTransactionService {
 
     private final UserService userService;
+    private final EncryptionUtil encryptionUtil;
 
     public Contract getContract(String email) throws Exception {
         if (email.isBlank() || email.isEmpty()) {
@@ -34,7 +36,8 @@ public class FabricTransactionService {
 
         Gateway.Builder builder = Gateway.createBuilder();
         AppUser user = userService.getUserByEmail(email);
-        builder.identity(wallet, user.getId().toString()).networkConfig(networkConfigPath).discovery(true);
+        String userId = this.encryptionUtil.encrypt(user.getId().toString());
+        builder.identity(wallet, userId).networkConfig(networkConfigPath).discovery(true);
 
         Gateway gateway = builder.connect();
         Network network = gateway.getNetwork(Config.CHANNEL_NAME);

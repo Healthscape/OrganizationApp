@@ -1,5 +1,6 @@
 package healthscape.com.healthscape.users.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import healthscape.com.healthscape.users.model.AppUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Setter
 @Getter
+@JsonIgnoreProperties
 public class UserDto {
 
     private String name;

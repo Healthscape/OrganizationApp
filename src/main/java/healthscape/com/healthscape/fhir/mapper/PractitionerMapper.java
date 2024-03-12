@@ -5,10 +5,11 @@ import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import org.hl7.fhir.r4.model.*;
-import org.hl7.fhir.r4.model.codesystems.V3MaritalStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class PractitionerMapper {
@@ -22,7 +23,15 @@ public class PractitionerMapper {
     public Practitioner appUserToFhirPractitioner(AppUser appUser, Specialty specialty) {
         Practitioner practitioner = new Practitioner();
 
-        practitioner.setId(appUser.getId().toString());
+        practitioner.setId(UUID.randomUUID().toString());
+
+        List<Identifier> identifiers = new ArrayList<>();
+        Identifier identifier = new Identifier();
+        identifier.setSystem("http://healthscape.com");
+        identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        identifier.setValue(appUser.getId().toString());
+        identifiers.add(identifier);
+        practitioner.setIdentifier(identifiers);
 
         practitioner.addName().addGiven(appUser.getName()).setFamily(appUser.getSurname());
         practitioner.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(appUser.getEmail());

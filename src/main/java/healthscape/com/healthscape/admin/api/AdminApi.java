@@ -25,18 +25,16 @@ import java.net.URI;
 public class AdminApi {
 
     private final UserService userService;
-    private final FabricUserService fabricUserService;
-    private final FhirService fhirService;
     private final UsersMapper usersMapper;
+    private final FhirService fhirService;
+    private final FabricUserService fabricUserService;
 
     @PostMapping("/practitioner")
     @PreAuthorize("hasAuthority('register_practitioner')")
     public ResponseEntity<?> registerPractitioner(@RequestBody RegisterPractitionerDto user) {
-        AppUser appUser = userService.register(user, "ROLE_PRACTITIONER");
-        appUser.setSpecialty(user.getSpecialty());
+        AppUser appUser = userService.registerPractitioner(user);
         try {
-            fhirService.registerPractitioner(appUser, user.specialty);
-            // TODO: uncomment
+            fhirService.registerPractitioner(appUser, user.getSpecialty());
             fabricUserService.registerUser(appUser);
         } catch (Exception e) {
             userService.deleteUser(appUser);

@@ -6,6 +6,7 @@ import healthscape.com.healthscape.accessRequests.mapper.AccessRequestMapper;
 import healthscape.com.healthscape.fabric.service.FabricAccessRequestService;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
+import healthscape.com.healthscape.util.EncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,6 +107,18 @@ public class AccessRequestService {
         try {
             String accessRequestStr = fabricAccessRequestService.getAccessRequestHistory(appUser.getEmail(), requestId);
             return accessRequestMapper.mapAccessRequestHistory(accessRequestStr);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+    public List<AccessRequestDto> getAllAvailableAccessRequests(String token) {
+        AppUser appUser = userService.getUserFromToken(token);
+        try {
+            String accessRequestsStr = fabricAccessRequestService.getAllAvailableAccessRequests(appUser.getEmail());
+            return accessRequestMapper.mapToAccessRequestsDto(accessRequestsStr);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

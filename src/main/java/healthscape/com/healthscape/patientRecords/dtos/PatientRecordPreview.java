@@ -1,4 +1,4 @@
-package healthscape.com.healthscape.records.dtos;
+package healthscape.com.healthscape.patientRecords.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

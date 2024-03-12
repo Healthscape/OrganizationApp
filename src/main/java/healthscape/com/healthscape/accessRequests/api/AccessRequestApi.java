@@ -20,16 +20,16 @@ public class AccessRequestApi {
 
     private final AccessRequestService accessRequestService;
 
-    @GetMapping("/{userId}")
-    @PreAuthorize("hasAuthority('get_access_request_for_user')")
-    public ResponseEntity<?> getAccessRequestForUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String userId) {
-        return ResponseEntity.ok(accessRequestService.getAccessRequestForUser(token, userId));
-    }
-
     @PostMapping("/{userId}")
     @PreAuthorize("hasAuthority('send_access_request')")
     public ResponseEntity<?> sendAccessRequest(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String userId) {
         return ResponseEntity.ok(accessRequestService.sendAccessRequest(token, userId));
+    }
+
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasAuthority('get_access_request_for_user')")
+    public ResponseEntity<?> getAccessRequestForUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String userId) {
+        return ResponseEntity.ok(accessRequestService.getAccessRequestForUser(token, userId));
     }
 
     @GetMapping(value = "", params = {"review"})

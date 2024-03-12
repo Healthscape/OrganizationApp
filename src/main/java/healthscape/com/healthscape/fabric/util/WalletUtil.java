@@ -1,6 +1,7 @@
 package healthscape.com.healthscape.fabric.util;
 
 import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.util.EncryptionUtil;
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallets;
@@ -23,11 +24,11 @@ public class WalletUtil {
         }
     }
 
-    public X509Identity getIdentity(UUID userIdentityId) throws IOException {
-        return (X509Identity) wallet.get(userIdentityId.toString());
+    public X509Identity getIdentity(String userIdentityId) throws IOException {
+        return (X509Identity) wallet.get(userIdentityId);
     }
 
-    public String getRoleFromIdentity(UUID userIdentityId) throws IOException {
+    public String getRoleFromIdentity(String userIdentityId) throws IOException {
         X509Identity identity = getIdentity(userIdentityId);
         String roleStr = new String(identity.getCertificate().getExtensionValue("1.2.3.4.5.6.7.8.1"));
         int startIndex = roleStr.indexOf("ROLE_");
@@ -35,7 +36,7 @@ public class WalletUtil {
         return roleStr.substring(startIndex, endIndex);
     }
 
-    public String getCNFromIdentity(UUID userIdentityId) throws IOException {
+    public String getCNFromIdentity(String userIdentityId) throws IOException {
         X509Identity identity = getIdentity(userIdentityId);
         String subject = identity.getCertificate().getSubjectX500Principal().getName();
         String[] strings = subject.split(",");
@@ -47,8 +48,8 @@ public class WalletUtil {
         return (X509Identity) wallet.get(Config.ADMIN_ID);
     }
 
-    public boolean doesExistById(UUID userIdentityId) throws IOException {
-        return wallet.get(userIdentityId.toString()) != null;
+    public boolean doesExistById(String userIdentityId) throws IOException {
+        return wallet.get(userIdentityId) != null;
     }
 
     public void putIdentity(String userIdentityId, Identity identity) throws IOException {

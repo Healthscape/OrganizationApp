@@ -30,6 +30,10 @@ INSERT INTO permission
 VALUES (10, 'get_access_requests_by_status');
 INSERT INTO permission
 VALUES (11, 'get_request_history');
+INSERT INTO permission
+VALUES (12, 'get_patient_record');
+INSERT INTO permission
+VALUES (13, 'get_all_available_patient_record');
 
 /* ========= ADMIN ========= */
 INSERT INTO role_permissions
@@ -52,6 +56,10 @@ INSERT INTO role_permissions
 VALUES (10, 3);/* practitioner <- get_access_requests_by_status*/
 INSERT INTO role_permissions
 VALUES (11, 3);/* practitioner <- get_request_history*/
+INSERT INTO role_permissions
+VALUES (12, 3);/* practitioner <- get_patient_record*/
+INSERT INTO role_permissions
+VALUES (13, 3);/* practitioner <- get_all_available_patient_record*/
 
 /* ========= PATIENT ========= */
 INSERT INTO role_permissions
@@ -66,6 +74,8 @@ INSERT INTO role_permissions
 VALUES (10, 2);/* patient <- get_access_requests_by_status*/
 INSERT INTO role_permissions
 VALUES (11, 2);/* patient <- get_request_history*/
+INSERT INTO role_permissions
+VALUES (12, 2);/* patient <- get_patient_record*/
 
 /* ************************************* SPECIALTY ************************************* */
 INSERT INTO specialty

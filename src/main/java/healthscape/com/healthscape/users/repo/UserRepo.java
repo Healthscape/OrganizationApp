@@ -10,7 +10,6 @@ import java.util.UUID;
 @Repository
 public interface UserRepo extends JpaRepository<AppUser, UUID> {
     AppUser findByEmail(String email);
-
-    AppUser findAppUserByRole(Role role);
+    AppUser findAppUserByRole_Name(String roleName);
 
 }

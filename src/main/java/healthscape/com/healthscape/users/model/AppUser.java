@@ -1,5 +1,6 @@
 package healthscape.com.healthscape.users.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@JsonIgnoreProperties
 public class AppUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

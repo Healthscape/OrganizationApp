@@ -7,6 +7,7 @@ import healthscape.com.healthscape.fabric.util.WalletUtil;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.util.EncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,7 @@ public class FabricUserService {
 
     private final WalletUtil walletUtil;
     private final UserService userService;
+    private final EncryptionUtil encryptionUtil;
 
     private static HFCAClient createCaClient() throws MalformedURLException, CryptoException, InvalidArgumentException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Properties props = new Properties();
@@ -79,8 +81,8 @@ public class FabricUserService {
     }
 
     public void registerUser(AppUser appUser) throws Exception {
-
-        if (walletUtil.doesExistById(appUser.getId())) {
+        String id = this.encryptionUtil.encrypt(appUser.getId().toString());
+        if (walletUtil.doesExistById(id)) {
             throw new HLFRegistrationException(String.format("An identity for the user %s already exists in the wallet", appUser.getId()));
         }
 
@@ -90,18 +92,17 @@ public class FabricUserService {
         }
 
         HFCAClient caClient = createCaClient();
-        String userUUID = appUser.getId().toString();
-        RegistrationRequest registrationRequest = new RegistrationRequest(userUUID);
+        RegistrationRequest registrationRequest = new RegistrationRequest(id);
         registrationRequest.setAffiliation("org1.department1");
-        registrationRequest.setEnrollmentID(userUUID);
+        registrationRequest.setEnrollmentID(id);
         registrationRequest.addAttribute(new Attribute("role", appUser.getRole().getName()));
         String enrollmentSecret = caClient.register(registrationRequest, fabricAdmin);
         EnrollmentRequest enrollmentRequest = new EnrollmentRequest();
         enrollmentRequest.addAttrReq("role");
-        Enrollment enrollment = caClient.enroll(userUUID, enrollmentSecret, enrollmentRequest);
+        Enrollment enrollment = caClient.enroll(id, enrollmentSecret, enrollmentRequest);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
-        walletUtil.putIdentity(userUUID, user);
-        System.out.printf("Successfully enrolled user %s and imported it into the wallet", userUUID);
+        walletUtil.putIdentity(id, user);
+        System.out.printf("Successfully enrolled user %s and imported it into the wallet \n", id);
     }
 
     private FabricUser findAdmin() throws IOException {

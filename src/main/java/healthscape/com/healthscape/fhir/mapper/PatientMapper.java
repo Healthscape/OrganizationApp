@@ -7,6 +7,7 @@ import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.model.codesystems.V3MaritalStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,16 +54,23 @@ public class PatientMapper {
         return fhirUserDto;
     }
 
-    public Patient appUserToFhirPatient(AppUser appUser, String personalId) {
+    public Patient appUserToFhirPatient(AppUser appUser, String personalId, String patientId) {
         Patient patient = new Patient();
 
-        patient.setId(appUser.getId().toString());
+        patient.setId(UUID.randomUUID().toString());
 
+        List<Identifier> identifiers = new ArrayList<>();
         Identifier identifier = new Identifier();
         identifier.setSystem("http://hl7.org/fhir/sid/us-ssn");
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
         identifier.setValue(personalId);
-        patient.setIdentifier(List.of(identifier));
+        identifiers.add(identifier);
+        Identifier patientIdentifier = new Identifier();
+        patientIdentifier.setSystem("http://healthscape.com");
+        patientIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        patientIdentifier.setValue(patientId);
+        identifiers.add(patientIdentifier);
+        patient.setIdentifier(identifiers);
 
         patient.addName().addGiven(appUser.getName()).setFamily(appUser.getSurname());
         patient.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(appUser.getEmail());
@@ -90,6 +98,44 @@ public class PatientMapper {
             System.out.println(e.getMessage());
         }
 
+        return patient;
+    }
+
+    public Patient mapUpdatedToPatient(Patient patient, FhirUserDto updatedPatient) {
+        patient.getName().remove(0);
+        patient.addName().addGiven(updatedPatient.getName()).setFamily(updatedPatient.getSurname());
+        patient.addTelecom().setSystem(ContactPoint.ContactPointSystem.PHONE).setValue(updatedPatient.getPhone());
+
+        if (updatedPatient.getAddress() != null) {
+            String[] addressList = updatedPatient.getAddress().split(", ");
+            Address address = new Address();
+            StringType stringType = new StringType();
+            stringType.setValue(addressList[0]);
+            address.setLine(List.of(stringType));
+            address.setCity(addressList[1]);
+            address.setPostalCode(addressList[2]);
+            address.setCountry(addressList[3]);
+            patient.setAddress(List.of(address));
+        }
+
+        if (updatedPatient.getGender() != null) {
+            patient.setGender(Enumerations.AdministrativeGender.valueOf(updatedPatient.getGender()));
+        }
+        patient.setBirthDate(updatedPatient.getBirthDate());
+        if (updatedPatient.getMaritalStatus() != null) {
+            CodeableConcept codeableConcept = new CodeableConcept();
+            codeableConcept.getCodingFirstRep().setCode(updatedPatient.getMaritalStatus());
+            patient.setMaritalStatus(codeableConcept);
+        }
+
+        try {
+            Attachment attachment = new Attachment();
+            attachment.setData(updatedPatient.getImage());
+            attachment.setUrl(updatedPatient.getImagePath());
+            patient.setPhoto(List.of(attachment));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         return patient;
     }
 }
