@@ -33,31 +33,43 @@ public class FhirService {
     public ChaincodePatientRecordDto registerPatient(AppUser appUser, String personalId) throws Exception {
         Patient patientData = getPatientWithPersonalId(personalId);
         if (patientData == null) {
-            personalId = this.encryptionUtil.encrypt(personalId);
-            String encryptedUserId = this.encryptionUtil.encrypt(appUser.getId().toString());
-            Patient patient = patientMapper.appUserToFhirPatient(appUser, personalId, encryptedUserId);
-            MethodOutcome methodOutcome = this.fhirClient.update().resource(patient).execute();
-            return getPatientRecordUpdateDto(methodOutcome, encryptedUserId, false);
+            return createNewPatient(appUser, personalId);
         } else {
-            String encryptedUserId = this.encryptionUtil.encrypt(appUser.getId().toString());
-            for (Identifier id : patientData.getIdentifier()) {
-                if (id.getSystem().equals("http://healthscape.com")) {
-                    throw new Exception("User is already registered at Healthscape!");
-                }
-            }
-            Identifier identifier = new Identifier();
-            identifier.setSystem("http://healthscape.com");
-            identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-            identifier.setValue(encryptedUserId);
-            patientData.getIdentifier().add(identifier);
-
-            MethodOutcome methodOutcome = this.fhirClient.update().resource(patientData).execute();
-            return getPatientRecordUpdateDto(methodOutcome, encryptedUserId, true);
+            return addHealthscapeId(appUser, patientData);
         }
     }
 
-    private ChaincodePatientRecordDto getPatientRecordUpdateDto(MethodOutcome methodOutcome, String encryptedUserId, boolean existing) {
-        String recordId = methodOutcome.getResource().getIdElement().getIdPart();
+    private ChaincodePatientRecordDto addHealthscapeId(AppUser appUser, Patient patientData) throws Exception {
+        for (Identifier id : patientData.getIdentifier()) {
+            if (id.getSystem().equals("http://healthscape.com")) {
+                throw new Exception("User is already registered at Healthscape!");
+            }
+        }
+        String encryptedUserId = this.encryptionUtil.encrypt(appUser.getId().toString());
+        Identifier identifier = createHealthscapeId(encryptedUserId);
+        patientData.getIdentifier().add(identifier);
+
+        MethodOutcome methodOutcome = this.fhirClient.update().resource(patientData).execute();
+        return getPatientRecordUpdateDto(methodOutcome.getResource().getIdElement().getIdPart(), encryptedUserId, true);
+    }
+
+    private static Identifier createHealthscapeId(String encryptedUserId) {
+        Identifier identifier = new Identifier();
+        identifier.setSystem("http://healthscape.com");
+        identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        identifier.setValue(encryptedUserId);
+        return identifier;
+    }
+
+    private ChaincodePatientRecordDto createNewPatient(AppUser appUser, String personalId) {
+        String encryptedPersonalId = this.encryptionUtil.encrypt(personalId);
+        String encryptedUserId = this.encryptionUtil.encrypt(appUser.getId().toString());
+        Patient patient = patientMapper.appUserToFhirPatient(appUser, encryptedPersonalId, encryptedUserId);
+        MethodOutcome methodOutcome = this.fhirClient.update().resource(patient).execute();
+        return getPatientRecordUpdateDto(methodOutcome.getResource().getIdElement().getIdPart(), encryptedUserId, false);
+    }
+
+    public ChaincodePatientRecordDto getPatientRecordUpdateDto(String recordId, String encryptedUserId, boolean existing) {
         String hashedData = this.getPatientDataHash(recordId);
         String offlineDataUrl = this.encryptionUtil.encrypt(recordId);
         return new ChaincodePatientRecordDto(offlineDataUrl, hashedData, encryptedUserId, existing);
@@ -71,12 +83,16 @@ public class FhirService {
     }
 
     public String getPatientDataHash(String recordId) {
-        String url = this.fhirClient.getServerBase() + "/Patient/" + recordId + "/$everything";
-        Bundle bundle = this.fhirClient.search().byUrl(url).returnBundle(Bundle.class).execute();
-        String bundleStr = fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
+        String bundleStr = getPatientRecord(recordId);
         JsonObject jsonObject = JsonParser.parseString(bundleStr).getAsJsonObject();
         String dataStr = jsonObject.get("entry").toString();
         return HashUtil.hashData(dataStr);
+    }
+
+    public String getPatientRecord(String recordId) {
+        String url = this.fhirClient.getServerBase() + "/Patient/" + recordId + "/$everything";
+        Bundle bundle = this.fhirClient.search().byUrl(url).returnBundle(Bundle.class).execute();
+        return fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
     }
 
     public Patient getPatientWithPersonalId(String personalId) {

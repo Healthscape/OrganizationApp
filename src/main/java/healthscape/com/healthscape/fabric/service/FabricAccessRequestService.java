@@ -82,4 +82,12 @@ public class FabricAccessRequestService {
         byte[] result = contract.evaluateTransaction("GetAllAvailableAccessRequests");
         return new String(result);
     }
+
+    public String isAccessRequestApproved(String email, String patientId, String recordId) throws Exception {
+        Contract contract = fabricTransactionService.getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: IsAccessRequestApproved creates new access request if it does not exist.");
+        byte[] result = contract.evaluateTransaction("IsAccessRequestApproved", patientId, recordId);
+        return new String(result);
+    }
 }

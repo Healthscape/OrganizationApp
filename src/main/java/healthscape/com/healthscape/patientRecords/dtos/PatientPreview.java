@@ -9,7 +9,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class PatientRecordPreview {
+public class PatientPreview {
     private String name;
     private String surname;
     private String personalId;

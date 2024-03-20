@@ -26,11 +26,11 @@ public class FabricPatientRecordService {
         return new String(result);
     }
 
-    public String updatePatientRecord(String email, ChaincodePatientRecordDto chaincodePatientRecordDto) throws Exception {
+    public String updatePatientRecord(String email, ChaincodePatientRecordDto updatedPatientRecordDto) throws Exception {
         Contract contract = fabricTransactionService.getContract(email);
         System.out.println("\n");
         System.out.println("Submit Transaction: UpdatePatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("UpdatePatientRecord", chaincodePatientRecordDto.getUserId(), chaincodePatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
+        byte[] result = contract.submitTransaction("UpdatePatientRecord", updatedPatientRecordDto.getUserId(), updatedPatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
         return new String(result);
     }
 

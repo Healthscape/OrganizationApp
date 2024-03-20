@@ -8,7 +8,7 @@ import healthscape.com.healthscape.fabric.service.FabricPatientRecordService;
 import healthscape.com.healthscape.fabric.util.WalletUtil;
 import healthscape.com.healthscape.fhir.service.FhirService;
 import healthscape.com.healthscape.patientRecords.dtos.PatientRecordDto;
-import healthscape.com.healthscape.patientRecords.dtos.PatientRecordPreview;
+import healthscape.com.healthscape.patientRecords.dtos.PatientPreview;
 import healthscape.com.healthscape.patientRecords.mapper.PatientRecordChaincodeMapper;
 import healthscape.com.healthscape.patientRecords.mapper.PatientRecordMapper;
 import healthscape.com.healthscape.users.model.AppUser;
@@ -38,7 +38,7 @@ public class PatientRecordService {
     private final AccessRequestService accessRequestService;
 
 
-    public PatientRecordPreview findRecordWithPersonalId(String token, String personalId) {
+    public PatientPreview findRecordWithPersonalId(String token, String personalId) {
         AppUser appUser = userService.getUserFromToken(token);
         try {
             String role = walletUtil.getRoleFromIdentity(this.encryptionUtil.encrypt(appUser.getId().toString()));
@@ -77,8 +77,8 @@ public class PatientRecordService {
         try {
             String patientRecordStr = fabricPatientRecordService.getPatientRecord(appUser.getEmail(), patientId);
             ChaincodePatientRecordDto fabricRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-            Patient patient = fhirService.getPatient(fabricRecord.getOfflineDataUrl());
-            return patientRecordMapper.mapToPatientRecord(patient);
+            String patientRecordBundle = fhirService.getPatientRecord(fabricRecord.getOfflineDataUrl());
+            return patientRecordMapper.mapToPatientRecord(patientRecordBundle);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

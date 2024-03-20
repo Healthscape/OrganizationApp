@@ -2,7 +2,7 @@ package healthscape.com.healthscape.patientRecords.mapper;
 
 import healthscape.com.healthscape.fhir.mapper.FhirMapper;
 import healthscape.com.healthscape.patientRecords.dtos.PatientRecordDto;
-import healthscape.com.healthscape.patientRecords.dtos.PatientRecordPreview;
+import healthscape.com.healthscape.patientRecords.dtos.PatientPreview;
 import healthscape.com.healthscape.util.EncryptionUtil;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.Identifier;
@@ -19,7 +19,7 @@ public class PatientRecordMapper {
     private final FhirMapper fhirMapper;
     private final EncryptionUtil encryptionUtil;
 
-    public PatientRecordPreview mapToPreview(Patient patient) {
+    public PatientPreview mapToPreview(Patient patient) {
         String id = "";
         for(Identifier identifier: patient.getIdentifier()){
             if(identifier.getSystem().equals("http://healthscape.com")){
@@ -32,10 +32,11 @@ public class PatientRecordMapper {
         String surname = patient.getName().get(0).getFamily();
         Date birthDate = patient.getBirthDate();
         String photo = Base64.getEncoder().encodeToString(patient.getPhoto().get(0).getData());
-        return new PatientRecordPreview(name, surname, personalId, birthDate, photo, id);
+        return new PatientPreview(name, surname, personalId, birthDate, photo, id);
     }
 
-    public PatientRecordDto mapToPatientRecord(Patient patient) {
+    public PatientRecordDto mapToPatientRecord(String patientRecordBundle) {
+
         return new PatientRecordDto();
     }
 }

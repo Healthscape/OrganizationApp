@@ -34,6 +34,10 @@ INSERT INTO permission
 VALUES (12, 'get_patient_record');
 INSERT INTO permission
 VALUES (13, 'get_all_available_patient_record');
+INSERT INTO permission
+VALUES (14, 'start_new_encounter');
+INSERT INTO permission
+VALUES (15, 'end_encounter');
 
 /* ========= ADMIN ========= */
 INSERT INTO role_permissions
@@ -60,6 +64,10 @@ INSERT INTO role_permissions
 VALUES (12, 3);/* practitioner <- get_patient_record*/
 INSERT INTO role_permissions
 VALUES (13, 3);/* practitioner <- get_all_available_patient_record*/
+INSERT INTO role_permissions
+VALUES (14, 3);/* practitioner <- start_new_encounter*/
+INSERT INTO role_permissions
+VALUES (15, 3);/* practitioner <- end_encounter*/
 
 /* ========= PATIENT ========= */
 INSERT INTO role_permissions

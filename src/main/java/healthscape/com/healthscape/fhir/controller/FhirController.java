@@ -29,13 +29,6 @@ public class FhirController {
     private final PatientRecordService patientRecordService;
     private final FhirMapper fhirMapper;
 
-    @GetMapping("/metadata")
-    public ResponseEntity<?> test() {
-        this.fhirService.getPatientDataHash("1");
-        return ResponseEntity.ok().body("OK");
-
-    }
-
     @GetMapping("/me")
     public ResponseEntity<?> getMe(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         FhirUserDto me = null;
