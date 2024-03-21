@@ -6,11 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PatientRecordDto {
     FhirUserDto userDto;
@@ -19,4 +19,12 @@ public class PatientRecordDto {
     List<ClinicalImpressionDto> clinicalImpressions;
     List<ConditionDto> conditions;
     List<DocumentReferenceDto> documentReferences;
+
+    public PatientRecordDto(){
+        this.encounters = new ArrayList<>();
+        this.medications = new ArrayList<>();
+        this.clinicalImpressions = new ArrayList<>();
+        this.conditions = new ArrayList<>();
+        this.documentReferences = new ArrayList<>();
+    }
 }

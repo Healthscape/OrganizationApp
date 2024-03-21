@@ -39,6 +39,36 @@ public class PatientRecordMapper {
 
     public PatientRecordDto mapToPatientRecord(Bundle patientRecordBundle) {
         PatientRecordDto patientRecordDto = new PatientRecordDto();
+        for (Bundle.BundleEntryComponent e : patientRecordBundle.getEntry()) {
+            switch (e.getResource().getResourceType()) {
+                case Patient -> {
+                    FhirUserDto userDto = this.fhirMapper.map((Patient) e.getResource());
+                    patientRecordDto.setUserDto(userDto);
+                }
+                case Encounter -> {
+                    EncounterDto encounterDto = this.encounterMapper.mapToEncounterDto((Encounter) e.getResource());
+                    patientRecordDto.getEncounters().add(encounterDto);
+                }
+                case MedicationAdministration -> {
+                    MedicationAdministrationDto medicationAdministrationDto = this.encounterMapper.mapToMedicationAdministrationDto((MedicationAdministration) e.getResource());
+                    patientRecordDto.getMedications().add(medicationAdministrationDto);
+                }
+                case ClinicalImpression -> {
+                    ClinicalImpressionDto clinicalImpressionDto = this.encounterMapper.mapToClinicalImpressionDto((ClinicalImpression) e.getResource());
+                    patientRecordDto.getClinicalImpressions().add(clinicalImpressionDto);
+                }
+                case Condition -> {
+                    ConditionDto conditionDto = this.encounterMapper.mapToConditionDto((Condition) e.getResource());
+                    patientRecordDto.getConditions().add(conditionDto);
+                }
+                case DocumentReference -> {
+                    DocumentReferenceDto documentRefDto = this.encounterMapper.mapToDocumentReferenceDto((DocumentReference) e.getResource());
+                    patientRecordDto.getDocumentReferences().add(documentRefDto);
+                }
+                default -> {
+                }
+            }
+        }
         return patientRecordDto;
     }
 }

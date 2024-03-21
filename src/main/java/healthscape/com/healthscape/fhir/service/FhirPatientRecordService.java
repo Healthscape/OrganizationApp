@@ -32,14 +32,14 @@ public class FhirPatientRecordService {
 
 
     public ChaincodePatientRecordDto createPatientRecordUpdateDto(String recordId, String userId) {
-        String hashedData = this.getPatientDataHash(recordId);
+        Bundle bundle = getPatientRecord(recordId);
+        String hashedData = this.getPatientDataHash(bundle);
         String offlineDataUrl = this.encryptionUtil.encryptIfNotAlready(recordId);
         String encryptedUserId = this.encryptionUtil.encryptIfNotAlready(userId);
         return new ChaincodePatientRecordDto(offlineDataUrl, hashedData, encryptedUserId);
     }
 
-    public String getPatientDataHash(String recordId) {
-        Bundle bundle = getPatientRecord(recordId);
+    public String getPatientDataHash(Bundle bundle) {
         String bundleStr = fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
         JsonObject jsonObject = JsonParser.parseString(bundleStr).getAsJsonObject();
         String dataStr = jsonObject.get("entry").toString();

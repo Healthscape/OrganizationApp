@@ -22,13 +22,13 @@ public class EncounterMapper {
         encounter.setStatus(Encounter.EncounterStatus.INPROGRESS);
         Reference patientRef = new Reference(patient);
         patientRef = patientRef.setReference("Patient/" + patient.getIdElement().getIdPart());
-        patientRef = patientRef.setDisplay(patient.getName().get(0).getGivenAsSingleString() + patient.getName().get(0).getFamily());
+        patientRef = patientRef.setDisplay(patient.getName().get(0).getGivenAsSingleString() + " " + patient.getName().get(0).getFamily());
         encounter.setSubject(patientRef);
         List<Encounter.EncounterParticipantComponent> participant = new ArrayList<>();
         Encounter.EncounterParticipantComponent encounterParticipantComponent = new Encounter.EncounterParticipantComponent();
         Reference practitionerRef = new Reference(practitioner);
         practitionerRef.setReference("Practitioner/" + practitioner.getIdElement().getIdPart());
-        practitionerRef.setDisplay(practitioner.getName().get(0).getGivenAsSingleString() + practitioner.getName().get(0).getFamily());
+        practitionerRef.setDisplay(practitioner.getName().get(0).getGivenAsSingleString() + " "+ practitioner.getName().get(0).getFamily());
         encounterParticipantComponent.setIndividual(practitionerRef);
         participant.add(encounterParticipantComponent);
         encounter.setParticipant(participant);
@@ -36,6 +36,16 @@ public class EncounterMapper {
         return encounter;
     }
 
+    public EncounterDto mapToEncounterDto(Encounter encounter) {
+        EncounterDto encounterDto = new EncounterDto();
+        encounterDto.setId(encounter.getIdElement().getIdPart());
+        encounterDto.setStatus(encounter.getStatus().toString());
+        encounterDto.setPatient(encounter.getSubject().getDisplay());
+        encounterDto.setPractitioner(encounter.getParticipant().get(0).getIndividual().getDisplay());
+        encounterDto.setStart(encounter.getPeriod().getStart());
+        encounterDto.setEnd(encounter.getPeriod().getEnd());
+        return encounterDto;
+    }
 
     public ClinicalImpression mapToClinicalImpression(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) {
         ClinicalImpression clinicalImpression = new ClinicalImpression();
@@ -49,6 +59,17 @@ public class EncounterMapper {
         return clinicalImpression;
     }
 
+    public ClinicalImpressionDto mapToClinicalImpressionDto(ClinicalImpression resource) {
+        ClinicalImpressionDto clinicalImpressionDto = new ClinicalImpressionDto();
+        clinicalImpressionDto.setEncounterId(resource.getEncounter().getReference());
+        clinicalImpressionDto.setPatient(resource.getSubject().getDisplay());
+        clinicalImpressionDto.setDate(resource.getDate());
+        clinicalImpressionDto.setStatus(resource.getStatus().getDisplay());
+        clinicalImpressionDto.setPractitioner(resource.getAssessor().getDisplay());
+        clinicalImpressionDto.setDescription(resource.getDescription());
+        clinicalImpressionDto.setSummary(resource.getSummary());
+        return clinicalImpressionDto;
+    }
 
     public MedicationAdministration mapToMedicationAdministration(Reference encounterRef, Encounter encounter, NewMedicationDto newMedicationDto, PatientRecordUpdateDto patientRecordUpdateDto, Reference medicationRef) {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
@@ -63,6 +84,17 @@ public class EncounterMapper {
         return medicationAdministration;
     }
 
+    public MedicationAdministrationDto mapToMedicationAdministrationDto(MedicationAdministration resource) {
+        MedicationAdministrationDto medicationAdministrationDto = new MedicationAdministrationDto();
+        medicationAdministrationDto.setEncounterId(resource.getContext().getReference());
+        medicationAdministrationDto.setPatient(resource.getSubject().getDisplay());
+        medicationAdministrationDto.setDosage(resource.getDosage().getText());
+        medicationAdministrationDto.setStart(resource.getEffectivePeriod().getStart());
+        medicationAdministrationDto.setEnd(resource.getEffectivePeriod().getEnd());
+        medicationAdministrationDto.setStatus(resource.getStatus().getDisplay());
+        medicationAdministrationDto.setMedication(resource.getMedicationReference().getDisplay());
+        return medicationAdministrationDto;
+    }
 
     public Medication mapToMedication(NewMedicationDto newMedicationDto) {
         Medication medication = new Medication();
@@ -94,6 +126,17 @@ public class EncounterMapper {
         return documentReference;
     }
 
+    public DocumentReferenceDto mapToDocumentReferenceDto(DocumentReference resource) {
+        DocumentReferenceDto documentReferenceDto = new DocumentReferenceDto();
+        documentReferenceDto.setEncounterId(resource.getContext().getEncounter().get(0).getReference());
+        documentReferenceDto.setDate(resource.getDate());
+        documentReferenceDto.setPractitioner(resource.getAuthenticator().getDisplay());
+        documentReferenceDto.setPatient(resource.getSubject().getDisplay());
+        documentReferenceDto.setData(resource.getContent().get(0).getAttachment().getData());
+        documentReferenceDto.setContentType(resource.getContent().get(0).getAttachment().getContentType());
+        documentReferenceDto.setTitle(resource.getContent().get(0).getAttachment().getTitle());
+        return documentReferenceDto;
+    }
 
 
     public Condition mapToCondition(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto, NewConditionDto newConditionDto) {
@@ -112,4 +155,16 @@ public class EncounterMapper {
         return condition;
     }
 
+    public ConditionDto mapToConditionDto(Condition resource) {
+        ConditionDto conditionDto = new ConditionDto();
+        conditionDto.setEncounterId(resource.getEncounter().getReference());
+        conditionDto.setPatient(resource.getSubject().getDisplay());
+        conditionDto.setPractitioner(resource.getAsserter().getDisplay());
+        conditionDto.setDate(resource.getRecordedDate());
+        conditionDto.setCode(resource.getCode().getText());
+        conditionDto.setStatus(resource.getClinicalStatus().getText());
+        conditionDto.setStart(resource.getOnsetPeriod().getStart());
+        conditionDto.setEnd(resource.getAbatementPeriod().getStart());
+        return conditionDto;
+    }
 }

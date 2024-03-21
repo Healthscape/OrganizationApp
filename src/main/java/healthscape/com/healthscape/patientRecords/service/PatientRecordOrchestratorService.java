@@ -21,6 +21,8 @@ import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -55,12 +57,10 @@ public class PatientRecordOrchestratorService {
         return patientRecordMapper.mapToPreview(patient);
     }
 
-    // TODO:
     public PatientRecordDto getPatientRecord(String token, String patientId) throws Exception {
         AppUser appUser = userService.getUserFromToken(token);
         String patientRecordStr = fabricPatientRecordService.getPatientRecord(appUser.getEmail(), patientId);
-        ChaincodePatientRecordDto fabricRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-        Bundle patientRecordBundle = fhirPatientRecordService.getPatientRecord(fabricRecord.getOfflineDataUrl());
+        Bundle patientRecordBundle = verifyDataIntegrity(patientRecordStr);
         return patientRecordMapper.mapToPatientRecord(patientRecordBundle);
     }
 
@@ -82,4 +82,19 @@ public class PatientRecordOrchestratorService {
         fabricPatientRecordService.updateMyPatientRecord(user.getEmail(), updatedPatientRecordDto);
     }
 
+    public void verifyRecordIntegrity(String token) throws Exception {
+        AppUser appUser = userService.getUserFromToken(token);
+        String patientRecordStr = fabricPatientRecordService.getMyPatientRecord(appUser.getEmail());
+        verifyDataIntegrity(patientRecordStr);
+    }
+
+    private Bundle verifyDataIntegrity(String patientRecordStr) throws Exception {
+        ChaincodePatientRecordDto fabricRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+        Bundle patientRecordBundle = fhirPatientRecordService.getPatientRecord(fabricRecord.getOfflineDataUrl());
+        String hashedData = fhirPatientRecordService.getPatientDataHash(patientRecordBundle);
+        if(!Objects.equals(hashedData, fabricRecord.getHashedData())){
+            throw new Exception("Patient Record is corrupted!");
+        }
+        return patientRecordBundle;
+    }
 }

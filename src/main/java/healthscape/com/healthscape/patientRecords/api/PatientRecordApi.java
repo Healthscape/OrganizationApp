@@ -21,6 +21,17 @@ public class PatientRecordApi {
 
     private final PatientRecordOrchestratorService patientRecordOrchestratorService;
 
+    @GetMapping(value = "/integrity")
+    @PreAuthorize("hasAuthority('verify_integrity')")
+    public ResponseEntity<?> verifyRecordIntegrity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        try {
+            this.patientRecordOrchestratorService.verifyRecordIntegrity(token);
+            return ResponseEntity.ok("");
+        } catch (Exception e) {
+            return handleException(e);
+        }
+    }
+
     @GetMapping(value = "", params = {"personalId"})
     @PreAuthorize("hasAuthority('find_record_with_personalId')")
     public ResponseEntity<?> findRecordWithPersonalId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String personalId) {

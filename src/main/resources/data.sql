@@ -38,6 +38,8 @@ INSERT INTO permission
 VALUES (14, 'start_new_encounter');
 INSERT INTO permission
 VALUES (15, 'end_encounter');
+INSERT INTO permission
+VALUES (16, 'verify_integrity');
 
 /* ========= ADMIN ========= */
 INSERT INTO role_permissions
@@ -85,8 +87,9 @@ VALUES (10, 2);/* patient <- get_access_requests_by_status*/
 INSERT INTO role_permissions
 VALUES (11, 2);/* patient <- get_request_history*/
 INSERT INTO role_permissions
-VALUES (12, 2);
-/* patient <- get_patient_record*/
+VALUES (12, 2);/* patient <- get_patient_record*/
+INSERT INTO role_permissions
+VALUES (16, 2);/* patient <- verify_integrity*/
 
 /* ************************************* SPECIALTY ************************************* */
 INSERT INTO specialty
