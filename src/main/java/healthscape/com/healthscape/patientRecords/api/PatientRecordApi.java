@@ -1,6 +1,9 @@
 package healthscape.com.healthscape.patientRecords.api;
 
-import healthscape.com.healthscape.patientRecords.service.PatientRecordService;
+import healthscape.com.healthscape.patientRecords.dtos.PatientRecordDto;
+import healthscape.com.healthscape.patientRecords.dtos.PatientRecordPreview;
+import healthscape.com.healthscape.patientRecords.service.PatientRecordOrchestratorService;
+import healthscape.com.healthscape.shared.ResponseJson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -16,23 +19,31 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class PatientRecordApi {
 
-    private final PatientRecordService patientRecordService;
+    private final PatientRecordOrchestratorService patientRecordOrchestratorService;
 
     @GetMapping(value = "", params = {"personalId"})
     @PreAuthorize("hasAuthority('find_record_with_personalId')")
     public ResponseEntity<?> findRecordWithPersonalId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String personalId) {
-        return ResponseEntity.ok(this.patientRecordService.findRecordWithPersonalId(token, personalId));
+        try {
+            PatientRecordPreview patientRecordPreview = this.patientRecordOrchestratorService.getPatientRecordPreview(token, personalId);
+            return ResponseEntity.ok(patientRecordPreview);
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @GetMapping("/{patientId}")
     @PreAuthorize("hasAuthority('get_patient_record')")
     public ResponseEntity<?> getPatientRecord(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String patientId) {
-        return ResponseEntity.ok(this.patientRecordService.getPatientRecord(token, patientId));
+        try {
+            PatientRecordDto patientRecordDto = this.patientRecordOrchestratorService.getPatientRecord(token, patientId);
+            return ResponseEntity.ok(patientRecordDto);
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
-    @GetMapping(value = "")
-    @PreAuthorize("hasAuthority('get_all_available_patient_record')")
-    public ResponseEntity<?> getAllAvailablePatientRecords(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-        return ResponseEntity.ok(this.patientRecordService.getAllAvailablePatientRecords(token));
+    private ResponseEntity<?> handleException(Exception e) {
+        return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
     }
 }

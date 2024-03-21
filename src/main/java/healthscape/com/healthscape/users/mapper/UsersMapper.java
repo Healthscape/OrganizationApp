@@ -2,17 +2,16 @@ package healthscape.com.healthscape.users.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
+import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.dto.RegisterDto;
 import healthscape.com.healthscape.users.dto.UserDto;
 import healthscape.com.healthscape.users.model.AppUser;
-import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.service.RoleService;
 import healthscape.com.healthscape.util.Config;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +38,9 @@ public class UsersMapper {
         UserDto userDto = new UserDto();
         modelMapper.map(appUser, userDto);
         userDto.setRole(appUser.getRole().getName());
-        try{
+        try {
             userDto.setImage(fileService.getImage(appUser.getImagePath()));
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         return userDto;
@@ -51,9 +50,9 @@ public class UsersMapper {
         AppUser appUser = objectMapper.convertValue(user, AppUser.class);
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         appUser.setRole(roleService.getByName(roleName));
-        if(roleName.equals("ROLE_PRACTITIONER")) {
+        if (roleName.equals("ROLE_PRACTITIONER")) {
             appUser.setImagePath("practitioner-default.png");
-        }else if(roleName.equals("ROLE_PATIENT")){
+        } else if (roleName.equals("ROLE_PATIENT")) {
             appUser.setImagePath("patient-default.png");
         }
         return appUser;

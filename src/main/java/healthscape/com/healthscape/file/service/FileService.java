@@ -53,9 +53,10 @@ public class FileService {
         Path imagePath = Path.of(imageDirectory, imageName);
 
         if (Files.exists(imagePath)) {
-            try{
+            try {
                 Files.delete(imagePath);
-            }catch (Exception ignored){}
+            } catch (Exception ignored) {
+            }
             return "Success";
         } else {
             return "Failed"; // Handle missing images

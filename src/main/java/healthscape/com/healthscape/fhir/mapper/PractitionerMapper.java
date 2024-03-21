@@ -5,6 +5,7 @@ import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import healthscape.com.healthscape.users.service.SpecialtyService;
+import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionUtil;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
@@ -29,9 +30,9 @@ public class PractitionerMapper {
 
         List<Identifier> identifiers = new ArrayList<>();
         Identifier identifier = new Identifier();
-        identifier.setSystem("http://healthscape.com");
+        identifier.setSystem(Config.HEALTHSCAPE_URL);
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(this.encryptionUtil.encrypt(appUser.getId().toString()));
+        identifier.setValue(this.encryptionUtil.encryptIfNotAlready(appUser.getId().toString()));
         identifiers.add(identifier);
         practitioner.setIdentifier(identifiers);
 
@@ -69,10 +70,9 @@ public class PractitionerMapper {
         CodeableConcept code = user.getQualification().get(0).getCode();
         String codeName = code.getCoding().get(0).getCode();
         fhirUserDto.setSpecialty(this.specialtyService.getByCode(codeName).getName());
-        try{
-            fhirUserDto.setImage(fileService.getImage(user.getPhoto().get(0).getUrl()));
-            fhirUserDto.setImagePath(user.getPhoto().get(0).getUrl());
-        }catch (Exception e){
+        try {
+            fhirUserDto.setImage(user.getPhoto().get(0).getData());
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         for (ContactPoint point : user.getTelecom()) {
@@ -96,13 +96,14 @@ public class PractitionerMapper {
         }
         practitioner.setBirthDate(updatedPractitioner.getBirthDate());
 
-        try {
-            Attachment attachment = new Attachment();
-            attachment.setData(updatedPractitioner.getImage());
-            attachment.setUrl(updatedPractitioner.getImagePath());
-            practitioner.setPhoto(List.of(attachment));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        if (updatedPractitioner.getImage().length != 0) {
+            try {
+                Attachment attachment = new Attachment();
+                attachment.setData(updatedPractitioner.getImage());
+                practitioner.setPhoto(List.of(attachment));
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
 
         Specialty specialty = specialtyService.getByCode(updatedPractitioner.getSpecialty());

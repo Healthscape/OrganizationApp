@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class ChaincodePatientRecordDto extends MyChaincodePatientRecordDto {
     private String userId;
 
-    public ChaincodePatientRecordDto(String offlineDataUrl, String hashedData, String userId, boolean existing) {
-        super(offlineDataUrl, hashedData, existing);
+    public ChaincodePatientRecordDto(String offlineDataUrl, String hashedData, String userId) {
+        super(offlineDataUrl, hashedData);
         this.userId = userId;
     }
 }

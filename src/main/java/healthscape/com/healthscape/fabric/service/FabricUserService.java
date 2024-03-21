@@ -81,7 +81,7 @@ public class FabricUserService {
     }
 
     public void registerUser(AppUser appUser) throws Exception {
-        String id = this.encryptionUtil.encrypt(appUser.getId().toString());
+        String id = this.encryptionUtil.encryptIfNotAlready(appUser.getId().toString());
         if (walletUtil.doesExistById(id)) {
             throw new HLFRegistrationException(String.format("An identity for the user %s already exists in the wallet", appUser.getId()));
         }
@@ -103,6 +103,16 @@ public class FabricUserService {
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
         walletUtil.putIdentity(id, user);
         System.out.printf("Successfully enrolled user %s and imported it into the wallet \n", id);
+    }
+
+    public void unregisterUser(AppUser appUser) {
+        String id = this.encryptionUtil.encryptIfNotAlready(appUser.getId().toString());
+        try {
+            walletUtil.deleteIdentity(id);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
     }
 
     private FabricUser findAdmin() throws IOException {

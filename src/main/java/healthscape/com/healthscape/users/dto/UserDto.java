@@ -1,7 +1,6 @@
 package healthscape.com.healthscape.users.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import healthscape.com.healthscape.users.model.AppUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package healthscape.com.healthscape.fabric.service;
 
-import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
 import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
+import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +55,14 @@ public class FabricPatientRecordService {
         System.out.println("\n");
         System.out.println("Submit Transaction: UpdateMyPatientRecord creates new access request if it does not exist.");
         byte[] result = contract.submitTransaction("UpdateMyPatientRecord", updatedMyPatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
+        return new String(result);
+    }
+
+    public String previewPatientRecord(String email) throws Exception {
+        Contract contract = fabricTransactionService.getContract(email);
+        System.out.println("\n");
+        System.out.println("Submit Transaction: PreviewPatientRecord creates new access request if it does not exist.");
+        byte[] result = contract.evaluateTransaction("PreviewPatientRecord");
         return new String(result);
     }
 }

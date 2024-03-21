@@ -9,8 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentReferenceDto {
-    String contentType;
-    String title;
-    String data;
+public class NewMedicationDto {
+    String id;
+    String status;
+    String medication;
+    String dosage;
 }

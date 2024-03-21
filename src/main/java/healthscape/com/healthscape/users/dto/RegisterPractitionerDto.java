@@ -1,6 +1,5 @@
-package healthscape.com.healthscape.admin.dtos;
+package healthscape.com.healthscape.users.dto;
 
-import healthscape.com.healthscape.users.dto.RegisterDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

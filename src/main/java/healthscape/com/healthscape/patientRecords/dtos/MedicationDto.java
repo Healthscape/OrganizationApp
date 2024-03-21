@@ -1,15 +1,15 @@
-package healthscape.com.healthscape.encounter.dto;
+package healthscape.com.healthscape.patientRecords.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ConditionDto {
+public class MedicationDto {
     String id;
-    String text;
+    String name;
 }

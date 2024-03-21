@@ -1,10 +1,12 @@
 package healthscape.com.healthscape.users.service;
 
-import healthscape.com.healthscape.admin.dtos.RegisterPractitionerDto;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
+import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.security.util.TokenUtils;
 import healthscape.com.healthscape.users.dto.PasswordDto;
 import healthscape.com.healthscape.users.dto.RegisterDto;
+import healthscape.com.healthscape.users.dto.RegisterPractitionerDto;
+import healthscape.com.healthscape.users.dto.UserDto;
 import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
@@ -18,7 +20,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +38,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final TokenUtils tokenUtils;
     private final EncryptionUtil encryptionUtil;
+    private final FileService fileService;
 
     public AppUser getUserFromToken(String token) {
         log.info("Fetching user from token: {}", token);
@@ -110,6 +115,19 @@ public class UserService implements UserDetailsService {
         userRepo.save(user);
     }
 
+    public AppUser changeInfo(String token, UserDto userDto, MultipartFile image) throws IOException {
+        AppUser user = getUserFromToken(token);
+        if (!image.isEmpty()) {
+            String filename = fileService.saveImageToStorage(image);
+            user.setImagePath(filename);
+
+        }
+        user.setName(userDto.getName());
+        user.setSurname(userDto.getSurname());
+        userRepo.save(user);
+        return user;
+    }
+
     public AppUser changeEmail(String token, String email) throws Exception {
         AppUser user = getUserFromToken(token);
         if (userRepo.findByEmail(email) != null) {
@@ -117,12 +135,12 @@ public class UserService implements UserDetailsService {
         }
 
         user.setEmail(email);
-        userRepo.save(user);
+        user = userRepo.save(user);
         return user;
     }
 
     public AppUser getUserById(String encryptedUserId) {
-        String userId = this.encryptionUtil.decrypt(encryptedUserId);
+        String userId = this.encryptionUtil.decryptIfNotAlready(encryptedUserId);
         Optional<AppUser> user = userRepo.findById(UUID.fromString(userId));
         return user.orElse(null);
     }

@@ -1,20 +1,14 @@
 package healthscape.com.healthscape.users.api;
 
-import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
-import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
-import healthscape.com.healthscape.fabric.service.FabricUserService;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
-import healthscape.com.healthscape.fhir.service.FhirService;
-import healthscape.com.healthscape.file.service.FileService;
-import healthscape.com.healthscape.patientRecords.service.PatientRecordService;
-import healthscape.com.healthscape.security.model.UserTokenState;
-import healthscape.com.healthscape.security.service.AuthenticationService;
 import healthscape.com.healthscape.shared.ResponseJson;
 import healthscape.com.healthscape.users.dto.PasswordDto;
 import healthscape.com.healthscape.users.dto.RegisterDto;
+import healthscape.com.healthscape.users.dto.RegisterPractitionerDto;
 import healthscape.com.healthscape.users.dto.UserDto;
 import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
+import healthscape.com.healthscape.users.orchestrator.UserOrchestrator;
 import healthscape.com.healthscape.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -38,101 +31,100 @@ import java.util.List;
 public class UserApi {
 
     private final UserService userService;
-    private final AuthenticationService authenticationService;
     private final UsersMapper usersMapper;
-    private final FhirService fhirService;
-    private final FabricUserService fabricUserService;
-    private final PatientRecordService patientRecordService;
-    private final FileService fileService;
+    private final UserOrchestrator userOrchestrator;
+
+
+    @GetMapping("/me/detailed")
+    public ResponseEntity<?> getMe(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        try {
+            FhirUserDto me = userOrchestrator.getMe(token);
+            return ResponseEntity.ok().body(me);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+        }
+    }
 
     @GetMapping("")
     @PreAuthorize("hasAuthority('get_all_users')")
     public ResponseEntity<List<UserDto>> getUsers() {
-        return ResponseEntity.ok().body(usersMapper.usersToUserDtos(userService.getUsers()));
+        List<UserDto> users = usersMapper.usersToUserDtos(userService.getUsers());
+        return ResponseEntity.ok().body(users);
     }
 
-    @PostMapping("")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterDto user) {
-        AppUser appUser = null;
+    @PostMapping("/patient")
+    public ResponseEntity<?> registerPatient(@RequestBody RegisterDto registerDto) {
         try {
-            appUser = userService.register(user);
-            ChaincodePatientRecordDto chaincodePatientRecordDto = fhirService.registerPatient(appUser, user.getIdentifier());
-            fabricUserService.registerUser(appUser);
-            if (!chaincodePatientRecordDto.isExisting()) {
-                patientRecordService.createPatientRecord(appUser, chaincodePatientRecordDto);
-            }else{
-                patientRecordService.updatePatientRecord(appUser, chaincodePatientRecordDto);
-            }
+            userOrchestrator.registerPatient(registerDto);
+            return ResponseEntity.created(getLocationUri()).body(registerDto);
         } catch (Exception e) {
-            if(appUser != null) {
-                userService.deleteUser(appUser);
-            }
-            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+            return handleException(e);
         }
-        return ResponseEntity.created(URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString())).body(usersMapper.userToUserDto(appUser));
+    }
+
+    @PostMapping("/practitioner")
+    @PreAuthorize("hasAuthority('register_practitioner')")
+    public ResponseEntity<?> registerPractitioner(@RequestBody RegisterPractitionerDto registerDto) {
+        try {
+            AppUser user = userOrchestrator.registerPractitioner(registerDto);
+            return ResponseEntity.created(getLocationUri()).body(usersMapper.userToUserDto(user));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @PutMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestPart("userDto") FhirUserDto userDto, @RequestPart("newImage") MultipartFile newImage) {
-        String imagePath = null;
+    public ResponseEntity<?> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestPart("userDto") FhirUserDto userDto, @RequestPart MultipartFile newImage) {
         try {
-            if(!newImage.isEmpty()){
-                imagePath = fileService.saveImageToStorage(newImage);
-                userDto.setImagePath(imagePath);
-            }
-            AppUser user = userService.getUserFromToken(token);
-            if(user.getRole().getName().equals("ROLE_PATIENT")){
-                MyChaincodePatientRecordDto myChaincodePatientRecordDto = patientRecordService.getMyPatientRecord(user);
-                MyChaincodePatientRecordDto updatedMyPatientRecordDto = fhirService.updatePatient(userDto, myChaincodePatientRecordDto.getOfflineDataUrl());
-                patientRecordService.updateMyPatientRecord(user, updatedMyPatientRecordDto);
-            }else if(user.getRole().getName().equals("ROLE_PRACTITIONER")){
-                fhirService.updatePractitioner(userDto, user.getId().toString());
-            }
-            userService.updateUser(user, userDto, imagePath);
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+            userDto.setImage(newImage.getBytes());
+            userOrchestrator.updateUser(token, userDto);
+            return ResponseEntity.ok(new ResponseJson(200, "OK"));
         } catch (Exception e) {
-            fileService.deleteImage(imagePath);
-            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+            return handleException(e);
         }
-
-        return ResponseEntity.ok().body(ResponseEntity.ok().body(new ResponseJson(200, "OK")));
     }
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-        return ResponseEntity.ok().body(usersMapper.userToUserDto(userService.getUserFromToken(token)));
+        return ResponseEntity.ok(usersMapper.userToUserDto(userService.getUserFromToken(token)));
+    }
+
+    @PutMapping(value = "/info", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<?> changeInfo(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestPart("userDto") UserDto userDto, @RequestPart MultipartFile newImage) {
+        try {
+            AppUser user = userService.changeInfo(token, userDto, newImage);
+            return ResponseEntity.ok(usersMapper.userToUserDto(user));
+        } catch (Exception e) {
+            return handleException(e);
+        }
     }
 
     @PutMapping("/email")
     public ResponseEntity<?> changeEmail(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody String email) {
-        UserTokenState tokens;
         try {
             AppUser user = userService.changeEmail(token, email);
-            if(user.getRole().getName().equals("ROLE_PATIENT")){
-                MyChaincodePatientRecordDto myChaincodePatientRecordDto = patientRecordService.getMyPatientRecord(user);
-                MyChaincodePatientRecordDto updatedMyPatientRecordDto = fhirService.changeEmailPatient(myChaincodePatientRecordDto.getOfflineDataUrl(), email);
-                patientRecordService.updateMyPatientRecord(user, updatedMyPatientRecordDto);
-            }else if(user.getRole().getName().equals("ROLE_PRACTITIONER")){
-                fhirService.changeEmailPatient(user.getId().toString(), email);
-            }
-            tokens = authenticationService.getAuthentication(user);
+            return ResponseEntity.ok(user);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+            return handleException(e);
         }
-
-        return ResponseEntity.ok(tokens);
     }
 
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody PasswordDto passwordDto) {
         try {
             userService.changePassword(token, passwordDto);
+            return ResponseEntity.ok(new ResponseJson(200, "OK"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+            return handleException(e);
         }
+    }
 
-        return ResponseEntity.ok(new ResponseJson(200, "OK"));
+    private ResponseEntity<?> handleException(Exception e) {
+        return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
+    }
+
+    private URI getLocationUri() {
+        return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString());
     }
 
 }

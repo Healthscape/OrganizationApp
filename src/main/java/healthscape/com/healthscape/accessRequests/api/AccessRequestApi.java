@@ -62,4 +62,10 @@ public class AccessRequestApi {
         accessRequestService.reviewAccessRequest(token, reviewedAccessRequestDto);
         return ResponseEntity.ok().body(ResponseEntity.ok().body(new ResponseJson(200, "OK")));
     }
+
+    @GetMapping(value = "/available")
+    @PreAuthorize("hasAuthority('get_all_available_access_requests')")
+    public ResponseEntity<?> getAllAvailableAccessRequests(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return ResponseEntity.ok(this.accessRequestService.getAllAvailableAccessRequests(token));
+    }
 }

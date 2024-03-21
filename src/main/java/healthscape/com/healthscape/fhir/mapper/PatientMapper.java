@@ -3,6 +3,7 @@ package healthscape.com.healthscape.fhir.mapper;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
+import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionUtil;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
@@ -23,7 +24,7 @@ public class PatientMapper {
     public FhirUserDto fhirPatientToFhirUserDto(Patient patient) {
         FhirUserDto fhirUserDto = new FhirUserDto();
 
-        fhirUserDto.setIdentifier(this.encryptionUtil.decrypt(patient.getIdentifier().get(0).getValue()));
+        fhirUserDto.setIdentifier(this.encryptionUtil.decryptIfNotAlready(patient.getIdentifier().get(0).getValue()));
 
         fhirUserDto.setName(patient.getName().get(0).getGiven().get(0).getValue());
         fhirUserDto.setSurname(patient.getName().get(0).getFamily());
@@ -38,9 +39,9 @@ public class PatientMapper {
             Address address = patient.getAddress().get(0);
             fhirUserDto.setAddress(address.getLine().get(0) + ", " + address.getCity() + ", " + address.getPostalCode() + ", " + address.getCountry());
         }
-        try{
-            fhirUserDto.setImage(fileService.getImage(patient.getPhoto().get(0).getUrl()));
-        }catch (Exception e){
+        try {
+            fhirUserDto.setImage(patient.getPhoto().get(0).getData());
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         for (ContactPoint point : patient.getTelecom()) {
@@ -54,7 +55,20 @@ public class PatientMapper {
         return fhirUserDto;
     }
 
+    public Patient createHealthscapeId(Patient patient, String userId) {
+        String encryptedUserId = this.encryptionUtil.encryptIfNotAlready(userId);
+        Identifier identifier = new Identifier();
+        identifier.setSystem(Config.HEALTHSCAPE_URL);
+        identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        identifier.setValue(encryptedUserId);
+        patient.getIdentifier().add(identifier);
+        return patient;
+    }
+
     public Patient appUserToFhirPatient(AppUser appUser, String personalId, String patientId) {
+        String encryptedPersonalId = this.encryptionUtil.encryptIfNotAlready(personalId);
+        String encryptedPatientId = this.encryptionUtil.encryptIfNotAlready(patientId);
+
         Patient patient = new Patient();
 
         patient.setId(UUID.randomUUID().toString());
@@ -63,12 +77,12 @@ public class PatientMapper {
         Identifier identifier = new Identifier();
         identifier.setSystem("http://hl7.org/fhir/sid/us-ssn");
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(personalId);
+        identifier.setValue(encryptedPersonalId);
         identifiers.add(identifier);
         Identifier patientIdentifier = new Identifier();
-        patientIdentifier.setSystem("http://healthscape.com");
+        patientIdentifier.setSystem(Config.HEALTHSCAPE_URL);
         patientIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        patientIdentifier.setValue(patientId);
+        patientIdentifier.setValue(encryptedPatientId);
         identifiers.add(patientIdentifier);
         patient.setIdentifier(identifiers);
 
@@ -128,13 +142,14 @@ public class PatientMapper {
             patient.setMaritalStatus(codeableConcept);
         }
 
-        try {
-            Attachment attachment = new Attachment();
-            attachment.setData(updatedPatient.getImage());
-            attachment.setUrl(updatedPatient.getImagePath());
-            patient.setPhoto(List.of(attachment));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        if (updatedPatient.getImage().length != 0) {
+            try {
+                Attachment attachment = new Attachment();
+                attachment.setData(updatedPatient.getImage());
+                patient.setPhoto(List.of(attachment));
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
         return patient;
     }

@@ -1,6 +1,6 @@
 package healthscape.com.healthscape.encounter.api;
 
-import healthscape.com.healthscape.encounter.dto.EncounterDto;
+import healthscape.com.healthscape.encounter.dto.PatientRecordUpdateDto;
 import healthscape.com.healthscape.encounter.service.EncounterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,23 +18,24 @@ import org.springframework.web.bind.annotation.*;
 public class EncounterApi {
 
     public final EncounterService encounterService;
+
     @PostMapping("/start/{recordId}/{patientId}")
     @PreAuthorize("hasAuthority('start_new_encounter')")
     public ResponseEntity<?> startNewEncounter(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String recordId, @PathVariable String patientId) {
-        EncounterDto encounterDto = null;
+        PatientRecordUpdateDto patientRecordUpdateDto = null;
         try {
-            encounterDto = encounterService.startNewEncounter(token, patientId, recordId);
+            patientRecordUpdateDto = encounterService.startNewEncounter(token, patientId, recordId);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(encounterDto);
+        return ResponseEntity.ok().body(patientRecordUpdateDto);
     }
 
     @PostMapping("/end")
     @PreAuthorize("hasAuthority('end_encounter')")
-    public ResponseEntity<?> endEncounter(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,@RequestBody EncounterDto encounterDto) {
+    public ResponseEntity<?> endEncounter(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody PatientRecordUpdateDto patientRecordUpdateDto) {
         try {
-            encounterService.endEncounter(token,encounterDto);
+            encounterService.endEncounter(token, patientRecordUpdateDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

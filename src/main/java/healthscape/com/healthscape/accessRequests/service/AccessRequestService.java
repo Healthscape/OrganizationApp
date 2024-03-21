@@ -6,7 +6,6 @@ import healthscape.com.healthscape.accessRequests.mapper.AccessRequestMapper;
 import healthscape.com.healthscape.fabric.service.FabricAccessRequestService;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
-import healthscape.com.healthscape.util.EncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

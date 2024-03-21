@@ -36,7 +36,7 @@ public class FabricTransactionService {
 
         Gateway.Builder builder = Gateway.createBuilder();
         AppUser user = userService.getUserByEmail(email);
-        String userId = this.encryptionUtil.encrypt(user.getId().toString());
+        String userId = this.encryptionUtil.encryptIfNotAlready(user.getId().toString());
         builder.identity(wallet, userId).networkConfig(networkConfigPath).discovery(true);
 
         Gateway gateway = builder.connect();

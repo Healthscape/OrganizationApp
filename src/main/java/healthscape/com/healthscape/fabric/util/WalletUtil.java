@@ -1,7 +1,6 @@
 package healthscape.com.healthscape.fabric.util;
 
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallets;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.UUID;
 
 @Component
 public class WalletUtil {
@@ -54,6 +52,10 @@ public class WalletUtil {
 
     public void putIdentity(String userIdentityId, Identity identity) throws IOException {
         wallet.put(userIdentityId, identity);
+    }
+
+    public void deleteIdentity(String userIdentityId) throws IOException {
+        wallet.remove(userIdentityId);
     }
 
     public boolean doesAdminExist() throws IOException {

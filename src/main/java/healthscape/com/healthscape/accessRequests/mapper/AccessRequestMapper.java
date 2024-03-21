@@ -43,10 +43,10 @@ public class AccessRequestMapper {
         requestDto.setPractitioner(practitioner.getName() + " " + practitioner.getSurname());
         requestDto.setSpecialty(this.specialtyService.getByCode(practitioner.getSpecialty()).getName());
 
-        try{
+        try {
             requestDto.setPatientImage(fileService.getImage(patient.getImagePath()));
             requestDto.setPractitionerImage(fileService.getImage(practitioner.getImagePath()));
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         return requestDto;
@@ -72,7 +72,7 @@ public class AccessRequestMapper {
         ObjectMapper objectMapper = new ObjectMapper();
         List<ChaincodeAccessRequestDto> chaincodeRequests = new ArrayList<>();
         List<AccessRequestDto> dtos = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++){
+        for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject element = jsonArray.getJSONObject(i);
             JSONObject valueObj = element.getJSONObject("Value");
             ChaincodeAccessRequestDto object = objectMapper.readValue(valueObj.toString(), ChaincodeAccessRequestDto.class);

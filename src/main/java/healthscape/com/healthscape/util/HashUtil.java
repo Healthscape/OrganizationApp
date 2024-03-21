@@ -8,14 +8,13 @@ import java.security.MessageDigest;
 @Component
 public class HashUtil {
 
-    public static String hashData(String data){
+    public static String hashData(String data) {
         MessageDigest digest;
-        try{
+        try {
             digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(
-                    data.getBytes(StandardCharsets.UTF_8));
+            byte[] encodedHash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
             return new String(encodedHash, StandardCharsets.UTF_8);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
         }

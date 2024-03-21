@@ -9,9 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MedicationDto {
+public class NewConditionDto {
     String id;
-    String status;
-    String medication;
-    String dosage;
+    String text;
 }

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 @Configuration
 public class Config {
 
+    public static final String HEALTHSCAPE_URL = "http://healthscape.com";
     public static final String MSP_ID = System.getenv().getOrDefault("MSP_ID", "Org1MSP");
     public static final String CHANNEL_NAME = System.getenv().getOrDefault("CHANNEL_NAME", "mychannel");
     public static final String CHAINCODE_NAME = System.getenv().getOrDefault("CHAINCODE_NAME", "ledger");
@@ -31,9 +32,8 @@ public class Config {
     public static final String ADMIN_PASSWORD = "adminpw";
     public static final String AFFILIATION = "org1";
     public static final String NETWORK_CONFIG_PATH = Config.CRYPTO_PATH + "/connection-org1.yaml";
-    public static String ADMIN_ID = "admin";
-
     public static final String FHIR_SERVER = "https://127.0.0.1:443/fhir";
+    public static String ADMIN_ID = "admin";
 
     public static void setAdminId(String id) {
         ADMIN_ID = id;

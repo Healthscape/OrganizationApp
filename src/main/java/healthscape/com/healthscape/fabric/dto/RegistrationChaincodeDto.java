@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
-public class MyChaincodePatientRecordDto {
-    private String offlineDataUrl;
-    private String hashedData;
+public class RegistrationChaincodeDto {
+    private String recordId;
+    private boolean existing;
 }
