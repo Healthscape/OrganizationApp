@@ -1,9 +1,6 @@
 package healthscape.com.healthscape.encounter.mapper;
 
-import healthscape.com.healthscape.encounter.dto.NewConditionDto;
-import healthscape.com.healthscape.encounter.dto.NewDocumentReferenceDto;
-import healthscape.com.healthscape.encounter.dto.NewMedicationDto;
-import healthscape.com.healthscape.encounter.dto.PatientRecordUpdateDto;
+import healthscape.com.healthscape.encounter.dto.*;
 import healthscape.com.healthscape.patientRecords.dtos.*;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
@@ -29,6 +26,7 @@ public class EncounterMapper {
         Reference practitionerRef = new Reference(practitioner);
         practitionerRef.setReference("Practitioner/" + practitioner.getIdElement().getIdPart());
         practitionerRef.setDisplay(practitioner.getName().get(0).getGivenAsSingleString() + " "+ practitioner.getName().get(0).getFamily());
+        practitionerRef.setDisplayElement(new StringType(practitioner.getQualification().get(0).getCode().getText()));
         encounterParticipantComponent.setIndividual(practitionerRef);
         participant.add(encounterParticipantComponent);
         encounter.setParticipant(participant);
@@ -44,6 +42,7 @@ public class EncounterMapper {
         encounterDto.setPractitioner(encounter.getParticipant().get(0).getIndividual().getDisplay());
         encounterDto.setStart(encounter.getPeriod().getStart());
         encounterDto.setEnd(encounter.getPeriod().getEnd());
+        encounterDto.setSpecialty(encounter.getParticipant().get(0).getIndividual().getDisplayElement().getValue());
         return encounterDto;
     }
 
@@ -166,5 +165,34 @@ public class EncounterMapper {
         conditionDto.setStart(resource.getOnsetPeriod().getStart());
         conditionDto.setEnd(resource.getAbatementPeriod().getStart());
         return conditionDto;
+    }
+
+    public AllergyIntolerance mapToAllergyIntolerance(Reference encounterRef, Encounter encounter, NewAllergyDto newAllergyDto, PatientRecordUpdateDto patientRecordUpdateDto) {
+        AllergyIntolerance allergyIntolerance = new AllergyIntolerance();
+        allergyIntolerance.setPatient(encounter.getSubject());
+        allergyIntolerance.setEncounter(encounterRef);
+        allergyIntolerance.setRecordedDate(patientRecordUpdateDto.getDate());
+        allergyIntolerance.setAsserter(encounter.getParticipant().get(0).getIndividual());
+        CodeableConcept codeableConcept = new CodeableConcept();
+        codeableConcept.setText(newAllergyDto.getCode());
+        allergyIntolerance.setCode(codeableConcept);
+        CodeableConcept clinicalStatus = new CodeableConcept();
+        clinicalStatus.setText("ACTIVE");
+        allergyIntolerance.setClinicalStatus(clinicalStatus);
+        allergyIntolerance.setOnset(new Period().setStart(patientRecordUpdateDto.getDate()));
+        return allergyIntolerance;
+    }
+
+    public AllergyDto mapToAllergyDto(AllergyIntolerance resource) {
+        AllergyDto allergyDto = new AllergyDto();
+        allergyDto.setEncounterId(resource.getEncounter().getReference());
+        allergyDto.setPatient(resource.getPatient().getDisplay());
+        allergyDto.setPractitioner(resource.getAsserter().getDisplay());
+        allergyDto.setDate(resource.getRecordedDate());
+        allergyDto.setCode(resource.getCode().getText());
+        allergyDto.setStatus(resource.getClinicalStatus().getText());
+        allergyDto.setStart(resource.getOnsetPeriod().getStart());
+        allergyDto.setEnd(resource.getOnsetPeriod().getEnd());
+        return allergyDto;
     }
 }

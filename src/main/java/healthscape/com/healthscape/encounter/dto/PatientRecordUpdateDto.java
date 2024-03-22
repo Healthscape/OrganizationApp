@@ -18,6 +18,7 @@ public class PatientRecordUpdateDto {
     List<NewDocumentReferenceDto> documents;
     List<NewMedicationDto> medications;
     List<NewConditionDto> conditions;
+    List<NewAllergyDto> allergies;
     Date date;
 
     public PatientRecordUpdateDto(String encounterId, String patientId) {

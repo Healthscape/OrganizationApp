@@ -1,22 +1,22 @@
 package healthscape.com.healthscape.patientRecords.dtos;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class EncounterDto {
-    String id;
-    String status;
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AllergyDto {
+    String encounterId;
     String patient;
     String practitioner;
+    Date date;
+    String code;
+    String status;
     Date start;
     Date end;
-    String specialty;
 }

@@ -29,7 +29,7 @@ public class PatientRecordMapper {
                 break;
             }
         }
-        String personalId = encryptionUtil.decryptIfNotAlready(patient.getIdentifier().get(0).getValue());
+        String personalId = encryptionUtil.decrypt(patient.getIdentifier().get(0).getValue());
         String name = patient.getName().get(0).getGiven().get(0).getValue();
         String surname = patient.getName().get(0).getFamily();
         Date birthDate = patient.getBirthDate();
@@ -64,6 +64,10 @@ public class PatientRecordMapper {
                 case DocumentReference -> {
                     DocumentReferenceDto documentRefDto = this.encounterMapper.mapToDocumentReferenceDto((DocumentReference) e.getResource());
                     patientRecordDto.getDocumentReferences().add(documentRefDto);
+                }
+                case AllergyIntolerance -> {
+                    AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto((AllergyIntolerance) e.getResource());
+                    patientRecordDto.getAllergies().add(allergyDto);
                 }
                 default -> {
                 }

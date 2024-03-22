@@ -19,6 +19,7 @@ public class PatientRecordDto {
     List<ClinicalImpressionDto> clinicalImpressions;
     List<ConditionDto> conditions;
     List<DocumentReferenceDto> documentReferences;
+    List<AllergyDto> allergies;
 
     public PatientRecordDto(){
         this.encounters = new ArrayList<>();
@@ -26,5 +27,6 @@ public class PatientRecordDto {
         this.clinicalImpressions = new ArrayList<>();
         this.conditions = new ArrayList<>();
         this.documentReferences = new ArrayList<>();
+        this.allergies = new ArrayList<>();
     }
 }

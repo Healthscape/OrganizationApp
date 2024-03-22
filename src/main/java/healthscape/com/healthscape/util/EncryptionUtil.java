@@ -39,6 +39,10 @@ public class EncryptionUtil {
         if (cipherText.length() != 64) {
             return cipherText;
         }
+        return decrypt(cipherText);
+    }
+
+    public String decrypt(String cipherText) {
         try {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);

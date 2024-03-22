@@ -85,7 +85,7 @@ public class FhirPatientRecordService {
     }
 
     public MethodOutcome saveEncounterResources(Resource resource) throws Exception {
-        List<ResourceType> allowedTypes = Arrays.asList(ResourceType.Condition, ResourceType.Medication, ResourceType.MedicationAdministration, ResourceType.DocumentReference, ResourceType.ClinicalImpression, ResourceType.Encounter);
+        List<ResourceType> allowedTypes = Arrays.asList(ResourceType.Condition, ResourceType.Medication, ResourceType.MedicationAdministration, ResourceType.DocumentReference, ResourceType.ClinicalImpression, ResourceType.Encounter, ResourceType.AllergyIntolerance);
         if (allowedTypes.contains(resource.getResourceType())) {
             return this.fhirClient.create().resource(resource).execute();
         } else {
@@ -106,8 +106,34 @@ public class FhirPatientRecordService {
 
         saveDocuments(encounterRef, encounter, patientRecordUpdateDto);
         saveMedications(encounterRef, encounter, patientRecordUpdateDto);
+        saveAllergies(encounterRef, encounter, patientRecordUpdateDto);
+
 
         saveEncounterResources(clinicalImpression);
+    }
+
+    private void saveAllergies(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+        for (NewAllergyDto newAllergyDto : patientRecordUpdateDto.getAllergies()) {
+            if (newAllergyDto.getId() != null) {
+                updateAllergy(newAllergyDto, patientRecordUpdateDto);
+            } else {
+                createAllergy(encounterRef, encounter, newAllergyDto, patientRecordUpdateDto);
+            }
+        }
+    }
+
+    private void createAllergy(Reference encounterRef, Encounter encounter, NewAllergyDto newAllergyDto, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+        AllergyIntolerance allergyIntolerance = this.encounterMapper.mapToAllergyIntolerance(encounterRef, encounter, newAllergyDto, patientRecordUpdateDto);
+        saveEncounterResources(allergyIntolerance);
+    }
+
+    private void updateAllergy(NewAllergyDto newAllergyDto, PatientRecordUpdateDto patientRecordUpdateDto) {
+        AllergyIntolerance allergyIntolerance = this.fhirClient.read().resource(AllergyIntolerance.class).withId(newAllergyDto.getId()).execute();
+        allergyIntolerance.getOnsetPeriod().setEnd(patientRecordUpdateDto.getDate());
+        CodeableConcept codeableConcept = new CodeableConcept();
+        codeableConcept.setText("INACTIVE");
+        allergyIntolerance.setClinicalStatus(codeableConcept);
+        this.fhirClient.update().resource(allergyIntolerance).execute();
     }
 
     private void saveMedications(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
