@@ -43,11 +43,11 @@ public class PatientRecordApi {
         }
     }
 
-    @GetMapping("/{patientId}")
+    @GetMapping("/{recordId}")
     @PreAuthorize("hasAuthority('get_patient_record')")
-    public ResponseEntity<?> getPatientRecord(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String patientId) {
+    public ResponseEntity<?> getPatientRecord(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String recordId) {
         try {
-            PatientRecordDto patientRecordDto = this.patientRecordOrchestratorService.getPatientRecord(token, patientId);
+            PatientRecordDto patientRecordDto = this.patientRecordOrchestratorService.getPatientRecord(token, recordId);
             return ResponseEntity.ok(patientRecordDto);
         } catch (Exception e) {
             return handleException(e);

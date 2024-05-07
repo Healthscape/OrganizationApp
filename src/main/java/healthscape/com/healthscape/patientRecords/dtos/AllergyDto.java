@@ -11,6 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AllergyDto {
+    String id;
     String encounterId;
     String patient;
     String practitioner;

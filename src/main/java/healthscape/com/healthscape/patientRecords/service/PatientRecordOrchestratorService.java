@@ -57,9 +57,9 @@ public class PatientRecordOrchestratorService {
         return patientRecordMapper.mapToPreview(patient);
     }
 
-    public PatientRecordDto getPatientRecord(String token, String patientId) throws Exception {
+    public PatientRecordDto getPatientRecord(String token, String recordId) throws Exception {
         AppUser appUser = userService.getUserFromToken(token);
-        String patientRecordStr = fabricPatientRecordService.getPatientRecord(appUser.getEmail(), patientId);
+        String patientRecordStr = fabricPatientRecordService.getPatientRecord(appUser.getEmail(), recordId);
         Bundle patientRecordBundle = verifyDataIntegrity(patientRecordStr);
         return patientRecordMapper.mapToPatientRecord(patientRecordBundle);
     }

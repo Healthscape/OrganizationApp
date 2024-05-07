@@ -12,6 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ClinicalImpressionDto {
+    String id;
     String encounterId;
     String patient;
     Date date;

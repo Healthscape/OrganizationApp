@@ -8,7 +8,9 @@ import healthscape.com.healthscape.encounter.dto.*;
 import healthscape.com.healthscape.encounter.mapper.EncounterMapper;
 import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
 import healthscape.com.healthscape.fhir.config.FhirConfig;
+import healthscape.com.healthscape.patientRecords.dtos.MedicationAdministrationDto;
 import healthscape.com.healthscape.users.model.AppUser;
+import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionUtil;
 import healthscape.com.healthscape.util.HashUtil;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +73,7 @@ public class FhirPatientRecordService {
         patientRecordUpdateDto.setDate(new Date());
         encounter.setStatus(Encounter.EncounterStatus.FINISHED);
         encounter.getPeriod().setEnd(patientRecordUpdateDto.getDate());
+        this.fhirClient.update().resource(encounter).execute();
 
         Reference encounterRef = new Reference(encounter);
         encounterRef.setReference("Encounter/" + patientRecordUpdateDto.getEncounterId());
@@ -100,19 +103,44 @@ public class FhirPatientRecordService {
     }
 
     public void saveEncounterData(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
-        List<ClinicalImpression.ClinicalImpressionFindingComponent> conditions = saveConditions(encounterRef, encounter, patientRecordUpdateDto);
-        ClinicalImpression clinicalImpression = this.encounterMapper.mapToClinicalImpression(encounterRef, encounter, patientRecordUpdateDto);
-        clinicalImpression.setFinding(conditions);
-
+        saveClinicalImpression(encounterRef, encounter, patientRecordUpdateDto);
         saveDocuments(encounterRef, encounter, patientRecordUpdateDto);
         saveMedications(encounterRef, encounter, patientRecordUpdateDto);
         saveAllergies(encounterRef, encounter, patientRecordUpdateDto);
 
 
+    }
+
+    private void saveClinicalImpression(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+        List<ClinicalImpression.ClinicalImpressionFindingComponent> conditions = saveConditions(encounterRef, encounter, patientRecordUpdateDto);
+        ClinicalImpression clinicalImpression = this.encounterMapper.mapToClinicalImpression(encounterRef, encounter, patientRecordUpdateDto);
+        if(conditions!=null) {
+            clinicalImpression.setFinding(conditions);
+        }
         saveEncounterResources(clinicalImpression);
     }
 
+    public List<MedicationAdministrationDto> getMedicationAdministrationHistory(String patientId) {
+        Bundle response = this.fhirClient.search()
+                .forResource(MedicationAdministration.class)
+                .where(Patient.IDENTIFIER.exactly().systemAndValues(Config.HEALTHSCAPE_URL, patientId))
+                .and(MedicationAdministration.STATUS.exactly().codes("stopped", "completed"))
+                .returnBundle(Bundle.class)
+                .execute();
+        List<MedicationAdministrationDto> medicationAdministrationDtos = new ArrayList<>();
+        for (Bundle.BundleEntryComponent entry : response.getEntry()) {
+            if (entry.getResource() instanceof MedicationAdministration medicationAdministration) {
+                MedicationAdministrationDto administrationDto = this.encounterMapper.mapToMedicationAdministrationDto(medicationAdministration);
+                medicationAdministrationDtos.add(administrationDto);
+            }
+        }
+        return medicationAdministrationDtos;
+    }
+
     private void saveAllergies(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+        if(patientRecordUpdateDto.getAllergies()==null){
+            return;
+        }
         for (NewAllergyDto newAllergyDto : patientRecordUpdateDto.getAllergies()) {
             if (newAllergyDto.getId() != null) {
                 updateAllergy(newAllergyDto, patientRecordUpdateDto);
@@ -137,6 +165,9 @@ public class FhirPatientRecordService {
     }
 
     private void saveMedications(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+        if(patientRecordUpdateDto.getMedications()==null){
+            return;
+        }
         for (NewMedicationDto newMedicationDto : patientRecordUpdateDto.getMedications()) {
             if (newMedicationDto.getId() != null) {
                 updateMedicationAdministration(newMedicationDto, patientRecordUpdateDto);
@@ -164,15 +195,14 @@ public class FhirPatientRecordService {
     private void updateMedicationAdministration(NewMedicationDto newMedicationDto, PatientRecordUpdateDto patientRecordUpdateDto) {
         MedicationAdministration medicationAdministration = this.fhirClient.read().resource(MedicationAdministration.class).withId(newMedicationDto.getId()).execute();
         medicationAdministration.setEffective(((Period) medicationAdministration.getEffective()).setEnd(patientRecordUpdateDto.getDate()));
-        if (newMedicationDto.getStatus().equals(MedicationAdministration.MedicationAdministrationStatus.COMPLETED.toString())) {
-            medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
-        } else if (newMedicationDto.getStatus().equals(MedicationAdministration.MedicationAdministrationStatus.STOPPED.toString())) {
-            medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.STOPPED);
-        }
+        medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.fromCode(newMedicationDto.getStatus()));
         this.fhirClient.update().resource(medicationAdministration).execute();
     }
 
     private void saveDocuments(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+        if(patientRecordUpdateDto.getDocuments()==null){
+            return;
+        }
         for (NewDocumentReferenceDto newDocumentReferenceDto : patientRecordUpdateDto.getDocuments()) {
             DocumentReference documentReference = this.encounterMapper.mapToDocumentReference(encounterRef, encounter, patientRecordUpdateDto, newDocumentReferenceDto);
             saveEncounterResources(documentReference);
@@ -181,6 +211,9 @@ public class FhirPatientRecordService {
 
     private List<ClinicalImpression.ClinicalImpressionFindingComponent> saveConditions(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
         List<ClinicalImpression.ClinicalImpressionFindingComponent> findingComponents = new ArrayList<>();
+        if(patientRecordUpdateDto.getConditions() == null){
+            return null;
+        }
         for (NewConditionDto newConditionDto : patientRecordUpdateDto.getConditions()) {
             if (newConditionDto.getId() != null) {
                 updateCondition(newConditionDto, patientRecordUpdateDto);

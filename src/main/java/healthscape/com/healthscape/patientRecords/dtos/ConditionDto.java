@@ -12,6 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConditionDto {
+    String id;
     String encounterId;
     String patient;
     String practitioner;

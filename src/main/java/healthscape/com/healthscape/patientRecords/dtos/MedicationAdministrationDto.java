@@ -12,6 +12,7 @@ import java.util.Date;
 @Getter
 @Setter
 public class MedicationAdministrationDto {
+    String id;
     String encounterId;
     String patient;
     String dosage;

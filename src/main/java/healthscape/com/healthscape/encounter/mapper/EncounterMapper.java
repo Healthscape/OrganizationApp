@@ -7,6 +7,7 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -25,8 +26,8 @@ public class EncounterMapper {
         Encounter.EncounterParticipantComponent encounterParticipantComponent = new Encounter.EncounterParticipantComponent();
         Reference practitionerRef = new Reference(practitioner);
         practitionerRef.setReference("Practitioner/" + practitioner.getIdElement().getIdPart());
-        practitionerRef.setDisplay(practitioner.getName().get(0).getGivenAsSingleString() + " "+ practitioner.getName().get(0).getFamily());
-        practitionerRef.setDisplayElement(new StringType(practitioner.getQualification().get(0).getCode().getText()));
+        String display =  practitioner.getQualification().get(0).getCode().getCoding().get(0).getDisplay() + " - "+ practitioner.getName().get(0).getGivenAsSingleString() + " "+ practitioner.getName().get(0).getFamily();
+        practitionerRef.setDisplay(display);
         encounterParticipantComponent.setIndividual(practitionerRef);
         participant.add(encounterParticipantComponent);
         encounter.setParticipant(participant);
@@ -37,12 +38,14 @@ public class EncounterMapper {
     public EncounterDto mapToEncounterDto(Encounter encounter) {
         EncounterDto encounterDto = new EncounterDto();
         encounterDto.setId(encounter.getIdElement().getIdPart());
-        encounterDto.setStatus(encounter.getStatus().toString());
+        encounterDto.setStatus(encounter.getStatus().toCode());
         encounterDto.setPatient(encounter.getSubject().getDisplay());
-        encounterDto.setPractitioner(encounter.getParticipant().get(0).getIndividual().getDisplay());
+        String display = encounter.getParticipant().get(0).getIndividual().getDisplay();
+        String[] displayStrs = display.split(" - ");
+        encounterDto.setSpecialty(displayStrs[0]);
+        encounterDto.setPractitioner(displayStrs[1]);
         encounterDto.setStart(encounter.getPeriod().getStart());
         encounterDto.setEnd(encounter.getPeriod().getEnd());
-        encounterDto.setSpecialty(encounter.getParticipant().get(0).getIndividual().getDisplayElement().getValue());
         return encounterDto;
     }
 
@@ -60,10 +63,11 @@ public class EncounterMapper {
 
     public ClinicalImpressionDto mapToClinicalImpressionDto(ClinicalImpression resource) {
         ClinicalImpressionDto clinicalImpressionDto = new ClinicalImpressionDto();
+        clinicalImpressionDto.setId(resource.getIdElement().getIdPart());
         clinicalImpressionDto.setEncounterId(resource.getEncounter().getReference());
         clinicalImpressionDto.setPatient(resource.getSubject().getDisplay());
         clinicalImpressionDto.setDate(resource.getDate());
-        clinicalImpressionDto.setStatus(resource.getStatus().getDisplay());
+        clinicalImpressionDto.setStatus(resource.getStatus().toCode());
         clinicalImpressionDto.setPractitioner(resource.getAssessor().getDisplay());
         clinicalImpressionDto.setDescription(resource.getDescription());
         clinicalImpressionDto.setSummary(resource.getSummary());
@@ -85,12 +89,13 @@ public class EncounterMapper {
 
     public MedicationAdministrationDto mapToMedicationAdministrationDto(MedicationAdministration resource) {
         MedicationAdministrationDto medicationAdministrationDto = new MedicationAdministrationDto();
+        medicationAdministrationDto.setId(resource.getIdElement().getIdPart());
         medicationAdministrationDto.setEncounterId(resource.getContext().getReference());
         medicationAdministrationDto.setPatient(resource.getSubject().getDisplay());
         medicationAdministrationDto.setDosage(resource.getDosage().getText());
         medicationAdministrationDto.setStart(resource.getEffectivePeriod().getStart());
         medicationAdministrationDto.setEnd(resource.getEffectivePeriod().getEnd());
-        medicationAdministrationDto.setStatus(resource.getStatus().getDisplay());
+        medicationAdministrationDto.setStatus(resource.getStatus().toCode());
         medicationAdministrationDto.setMedication(resource.getMedicationReference().getDisplay());
         return medicationAdministrationDto;
     }
@@ -110,7 +115,8 @@ public class EncounterMapper {
         List<DocumentReference.DocumentReferenceContentComponent> contentComponents = new ArrayList<>();
         DocumentReference.DocumentReferenceContentComponent contentComponent = new DocumentReference.DocumentReferenceContentComponent();
         Attachment attachment = new Attachment();
-        attachment.setData(newDocumentReferenceDto.getData().getBytes());
+        byte[] imageBytes = Base64.getDecoder().decode(newDocumentReferenceDto.getData().split(",")[1]);
+        attachment.setData(imageBytes);
         attachment.setCreation(patientRecordUpdateDto.getDate());
         attachment.setContentType(newDocumentReferenceDto.getContentType());
         attachment.setTitle(newDocumentReferenceDto.getTitle());
@@ -127,11 +133,16 @@ public class EncounterMapper {
 
     public DocumentReferenceDto mapToDocumentReferenceDto(DocumentReference resource) {
         DocumentReferenceDto documentReferenceDto = new DocumentReferenceDto();
+        documentReferenceDto.setId(resource.getIdElement().getIdPart());
         documentReferenceDto.setEncounterId(resource.getContext().getEncounter().get(0).getReference());
         documentReferenceDto.setDate(resource.getDate());
-        documentReferenceDto.setPractitioner(resource.getAuthenticator().getDisplay());
+        String display = resource.getAuthenticator().getDisplay();
+        String[] displayStrs = display.split(" - ");
+        documentReferenceDto.setSpecialty(displayStrs[0]);
+        documentReferenceDto.setPractitioner(displayStrs[1]);
         documentReferenceDto.setPatient(resource.getSubject().getDisplay());
-        documentReferenceDto.setData(resource.getContent().get(0).getAttachment().getData());
+        String base64Image = Base64.getEncoder().encodeToString(resource.getContent().get(0).getAttachment().getData());
+        documentReferenceDto.setData(base64Image);
         documentReferenceDto.setContentType(resource.getContent().get(0).getAttachment().getContentType());
         documentReferenceDto.setTitle(resource.getContent().get(0).getAttachment().getTitle());
         return documentReferenceDto;
@@ -156,6 +167,7 @@ public class EncounterMapper {
 
     public ConditionDto mapToConditionDto(Condition resource) {
         ConditionDto conditionDto = new ConditionDto();
+        conditionDto.setId(resource.getIdElement().getIdPart());
         conditionDto.setEncounterId(resource.getEncounter().getReference());
         conditionDto.setPatient(resource.getSubject().getDisplay());
         conditionDto.setPractitioner(resource.getAsserter().getDisplay());
@@ -185,6 +197,7 @@ public class EncounterMapper {
 
     public AllergyDto mapToAllergyDto(AllergyIntolerance resource) {
         AllergyDto allergyDto = new AllergyDto();
+        allergyDto.setId(resource.getIdElement().getIdPart());
         allergyDto.setEncounterId(resource.getEncounter().getReference());
         allergyDto.setPatient(resource.getPatient().getDisplay());
         allergyDto.setPractitioner(resource.getAsserter().getDisplay());

@@ -34,11 +34,11 @@ public class FabricPatientRecordService {
         return new String(result);
     }
 
-    public String getPatientRecord(String email, String patientId) throws Exception {
+    public String getPatientRecord(String email, String recordId) throws Exception {
         Contract contract = fabricTransactionService.getContract(email);
         System.out.println("\n");
         System.out.println("Submit Transaction: GetPatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.evaluateTransaction("GetPatientRecord", patientId);
+        byte[] result = contract.evaluateTransaction("GetPatientRecord", recordId);
         return new String(result);
     }
 

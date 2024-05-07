@@ -12,11 +12,13 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DocumentReferenceDto {
+    String id;
     String encounterId;
     Date date;
     String practitioner;
+    String specialty;
     String patient;
-    byte[] data;
+    String data;
     String contentType;
     String title;
 }
