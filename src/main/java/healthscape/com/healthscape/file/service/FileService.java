@@ -2,7 +2,6 @@ package healthscape.com.healthscape.file.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +14,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 @Transactional
-@Slf4j
 public class FileService {
 
     private final String imageDirectory = "src/main/resources/images";

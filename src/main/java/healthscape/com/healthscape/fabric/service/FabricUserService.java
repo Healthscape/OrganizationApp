@@ -10,7 +10,6 @@ import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.Identities;
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.X509Identity;
@@ -34,7 +33,6 @@ import java.util.Properties;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional
 public class FabricUserService {
 

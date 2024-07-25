@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import healthscape.com.healthscape.accessRequests.dto.ReviewedAccessRequestDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.Contract;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,6 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional
 public class FabricAccessRequestService {
 

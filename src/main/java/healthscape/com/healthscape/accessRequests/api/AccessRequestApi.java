@@ -4,7 +4,6 @@ import healthscape.com.healthscape.accessRequests.dto.ReviewedAccessRequestDto;
 import healthscape.com.healthscape.accessRequests.service.AccessRequestService;
 import healthscape.com.healthscape.shared.ResponseJson;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/accessRequests", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-@Slf4j
 @CrossOrigin
 public class AccessRequestApi {
 

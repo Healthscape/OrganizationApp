@@ -3,7 +3,6 @@ package healthscape.com.healthscape.patientRecords.dtos;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;

@@ -11,7 +11,6 @@ import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.orchestrator.UserOrchestrator;
 import healthscape.com.healthscape.users.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,6 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-@Slf4j
 @CrossOrigin
 public class UserApi {
 

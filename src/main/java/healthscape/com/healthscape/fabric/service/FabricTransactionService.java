@@ -6,7 +6,6 @@ import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.*;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +15,6 @@ import java.nio.file.Paths;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional
 public class FabricTransactionService {
 
@@ -37,7 +35,7 @@ public class FabricTransactionService {
         Gateway.Builder builder = Gateway.createBuilder();
         AppUser user = userService.getUserByEmail(email);
         String userId = this.encryptionUtil.encryptIfNotAlready(user.getId().toString());
-        builder.identity(wallet, userId).networkConfig(networkConfigPath).discovery(true);
+        builder.identity(wallet, userId).networkConfig(networkConfigPath).discovery(false);
 
         Gateway gateway = builder.connect();
         Network network = gateway.getNetwork(Config.CHANNEL_NAME);

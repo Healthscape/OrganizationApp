@@ -4,7 +4,6 @@ import healthscape.com.healthscape.users.dto.SpecialtyDto;
 import healthscape.com.healthscape.users.mapper.SpecialtyMapper;
 import healthscape.com.healthscape.users.service.SpecialtyService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,7 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/specialty", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-@Slf4j
 @CrossOrigin
 public class SpecialtyApi {
 

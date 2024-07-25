@@ -12,7 +12,6 @@ import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -20,7 +19,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class UserOrchestrator {
 
     private final UserService userService;

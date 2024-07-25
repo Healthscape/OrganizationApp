@@ -5,7 +5,6 @@ import healthscape.com.healthscape.patientRecords.dtos.PatientRecordPreview;
 import healthscape.com.healthscape.patientRecords.service.PatientRecordOrchestratorService;
 import healthscape.com.healthscape.shared.ResponseJson;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(value = "/records", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-@Slf4j
 @CrossOrigin
 @RestController
 public class PatientRecordApi {

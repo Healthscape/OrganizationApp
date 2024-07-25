@@ -19,5 +19,4 @@ public class PatientRecordChaincodeMapper {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(patientRecordJson, ChaincodePatientRecordDto.class);
     }
-
 }
