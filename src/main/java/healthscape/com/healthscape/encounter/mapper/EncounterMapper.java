@@ -4,6 +4,7 @@ import healthscape.com.healthscape.encounter.dto.*;
 import healthscape.com.healthscape.patientRecords.dtos.*;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.AllergyIntolerance.AllergyIntoleranceCriticality;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -188,6 +189,12 @@ public class EncounterMapper {
         CodeableConcept codeableConcept = new CodeableConcept();
         codeableConcept.setText(newAllergyDto.getCode());
         allergyIntolerance.setCode(codeableConcept);
+        List<Enumeration<AllergyIntolerance.AllergyIntoleranceCategory>> categories = new ArrayList<>();
+        Enumeration<AllergyIntolerance.AllergyIntoleranceCategory> category = new Enumeration<>(new AllergyIntolerance.AllergyIntoleranceCategoryEnumFactory());
+        category.setValue(AllergyIntolerance.AllergyIntoleranceCategory.fromCode(newAllergyDto.getCategory().toLowerCase()));
+        categories.add(category);
+        allergyIntolerance.setCategory(categories);
+        allergyIntolerance.setCriticality(AllergyIntoleranceCriticality.fromCode(newAllergyDto.getCriticality().toLowerCase()));
         CodeableConcept clinicalStatus = new CodeableConcept();
         clinicalStatus.setText("ACTIVE");
         allergyIntolerance.setClinicalStatus(clinicalStatus);

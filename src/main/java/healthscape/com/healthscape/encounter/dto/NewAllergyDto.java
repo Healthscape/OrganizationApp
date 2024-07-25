@@ -12,4 +12,6 @@ import lombok.Setter;
 public class NewAllergyDto {
     String id;
     String code;
+    String category;
+    String criticality;
 }

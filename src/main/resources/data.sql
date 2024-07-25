@@ -42,6 +42,10 @@ INSERT INTO permission
 VALUES (16, 'verify_integrity');
 INSERT INTO permission
 VALUES (17, 'get_medication_history');
+INSERT INTO permission
+VALUES (18, 'get_condition_history');
+INSERT INTO permission
+VALUES (19, 'get_allergy_history');
 
 /* ========= ADMIN ========= */
 INSERT INTO role_permissions
@@ -74,6 +78,10 @@ INSERT INTO role_permissions
 VALUES (15, 3);/* practitioner <- end_encounter*/
 INSERT INTO role_permissions
 VALUES (17, 3);/* practitioner <- get_medication_history*/
+INSERT INTO role_permissions
+VALUES (18, 3);/* practitioner <- get_condition_history*/
+INSERT INTO role_permissions
+VALUES (19, 3);/* practitioner <- get_allergy_history*/
 
 /* ========= PATIENT ========= */
 INSERT INTO role_permissions

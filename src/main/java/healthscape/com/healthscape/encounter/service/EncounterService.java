@@ -6,13 +6,14 @@ import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
 import healthscape.com.healthscape.fabric.service.FabricAccessRequestService;
 import healthscape.com.healthscape.fabric.service.FabricPatientRecordService;
 import healthscape.com.healthscape.fhir.service.FhirPatientRecordService;
+import healthscape.com.healthscape.patientRecords.dtos.AllergyDto;
+import healthscape.com.healthscape.patientRecords.dtos.ConditionDto;
 import healthscape.com.healthscape.patientRecords.dtos.MedicationAdministrationDto;
 import healthscape.com.healthscape.patientRecords.mapper.PatientRecordChaincodeMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Encounter;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,6 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
-@Slf4j
 public class EncounterService {
 
 
@@ -40,9 +40,9 @@ public class EncounterService {
             throw new Exception("Unauthorized access");
         }
 
-        StartEncounterDto startEncounterDto = this.fhirPatientRecordService.updatePatientRecordWithEncounter(patientRecord.getUserId(), patientRecord, user);
+        StartEncounterDto startEncounterDto = this.fhirPatientRecordService.updatePatientRecordWithEncounter(patientRecord.getEncryptedUserId(), patientRecord, user);
         this.fabricPatientRecordService.updatePatientRecord(user.getEmail(), startEncounterDto.getChaincodePatientRecordDto());
-        return new PatientRecordUpdateDto(startEncounterDto.getEncounterId(), patientRecord.getUserId());
+        return new PatientRecordUpdateDto(startEncounterDto.getEncounterId(), patientRecord.getEncryptedUserId());
     }
 
     public void endEncounter(String token, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
@@ -56,12 +56,33 @@ public class EncounterService {
         ChaincodePatientRecordDto updatedPatientRecord = this.fhirPatientRecordService.updatePatientRecordsEncounter(patientRecordUpdateDto, encounter);
         this.fabricPatientRecordService.updatePatientRecord(user.getEmail(), updatedPatientRecord);
     }
+
     public List<MedicationAdministrationDto> getMedicationAdministrationHistory(String token, String requestId) throws Exception {
         AppUser user = userService.getUserFromToken(token);
         String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
         ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
         if(patientRecord != null){
-            return this.fhirPatientRecordService.getMedicationAdministrationHistory(patientRecord.getUserId());
+            return this.fhirPatientRecordService.getMedicationAdministrationHistory(patientRecord.getEncryptedUserId());
+        }
+        return null;
+    }
+
+    public List<ConditionDto> getConditionHistory(String token, String requestId) throws Exception {
+        AppUser user = userService.getUserFromToken(token);
+        String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
+        ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+        if(patientRecord != null){
+            return this.fhirPatientRecordService.getConditionHistory(patientRecord.getEncryptedUserId());
+        }
+        return null;
+    }
+
+    public List<AllergyDto> getAllergyHistory(String token, String requestId) throws Exception {
+        AppUser user = userService.getUserFromToken(token);
+        String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
+        ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+        if(patientRecord != null){
+            return this.fhirPatientRecordService.geAllergyHistory(patientRecord.getEncryptedUserId());
         }
         return null;
     }
