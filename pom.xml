@@ -8,6 +8,12 @@
         <version>3.1.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+      </repositories>
     <groupId>healthscape.com</groupId>
     <artifactId>healthscape</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -35,6 +41,13 @@
         </profile>
     </profiles>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.github.ipfs/java-ipfs-http-client -->
+        <dependency>
+            <groupId>com.github.ipfs</groupId>
+            <artifactId>java-ipfs-http-client</artifactId>
+            <version>1.4.4</version>
+        </dependency>
+
         <!-- This dependency includes the core HAPI-FHIR classes -->
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>

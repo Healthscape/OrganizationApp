@@ -10,10 +10,12 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 public class ChaincodePatientRecordDto extends MyChaincodePatientRecordDto {
-    private String userId;
+    private String encryptedUserId;
+    private String encryptedPersonalId;
 
-    public ChaincodePatientRecordDto(String offlineDataUrl, String hashedData, String userId) {
+    public ChaincodePatientRecordDto(String offlineDataUrl, String hashedData, String encryptedUserId, String encryptedPersonalId) {
         super(offlineDataUrl, hashedData);
-        this.userId = userId;
+        this.encryptedUserId = encryptedUserId;
+        this.encryptedPersonalId = encryptedPersonalId;
     }
 }

@@ -33,6 +33,7 @@ public class Config {
     public static final String AFFILIATION = "org1";
     public static final String NETWORK_CONFIG_PATH = Config.CRYPTO_PATH + "/connection-org1.yaml";
     public static final String FHIR_SERVER = "https://127.0.0.1:443/fhir";
+    public static final String IPFS_URL = "/ip4/0.0.0.0/tcp/5001";
     public static String ADMIN_ID = "admin";
 
     public static void setAdminId(String id) {
