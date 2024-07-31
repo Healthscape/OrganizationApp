@@ -7,7 +7,7 @@ import healthscape.com.healthscape.fabric.util.WalletUtil;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hyperledger.fabric.gateway.Identities;
@@ -38,7 +38,7 @@ public class FabricUserService {
 
     private final WalletUtil walletUtil;
     private final UserService userService;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
 
     private static HFCAClient createCaClient() throws MalformedURLException, CryptoException, InvalidArgumentException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Properties props = new Properties();
@@ -79,7 +79,7 @@ public class FabricUserService {
     }
 
     public void registerUser(AppUser appUser) throws Exception {
-        String id = this.encryptionUtil.encryptIfNotAlready(appUser.getId().toString());
+        String id = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(appUser.getId().toString());
         if (walletUtil.doesExistById(id)) {
             throw new HLFRegistrationException(String.format("An identity for the user %s already exists in the wallet", appUser.getId()));
         }
@@ -104,7 +104,7 @@ public class FabricUserService {
     }
 
     public void unregisterUser(AppUser appUser) {
-        String id = this.encryptionUtil.encryptIfNotAlready(appUser.getId().toString());
+        String id = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(appUser.getId().toString());
         try {
             walletUtil.deleteIdentity(id);
         } catch (Exception e) {

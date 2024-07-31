@@ -6,7 +6,7 @@ import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import healthscape.com.healthscape.users.service.SpecialtyService;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ import java.util.UUID;
 public class PractitionerMapper {
 
     private final FileService fileService;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
     private final SpecialtyService specialtyService;
 
     public Practitioner appUserToFhirPractitioner(AppUser appUser, Specialty specialty) {
@@ -32,7 +32,7 @@ public class PractitionerMapper {
         Identifier identifier = new Identifier();
         identifier.setSystem(Config.HEALTHSCAPE_URL);
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(this.encryptionUtil.encryptIfNotAlready(appUser.getId().toString()));
+        identifier.setValue(this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(appUser.getId().toString()));
         identifiers.add(identifier);
         practitioner.setIdentifier(identifiers);
 

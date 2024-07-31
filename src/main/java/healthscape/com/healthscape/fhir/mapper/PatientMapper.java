@@ -4,7 +4,7 @@ import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.model.codesystems.V3MaritalStatus;
@@ -19,12 +19,12 @@ import java.util.UUID;
 public class PatientMapper {
 
     private final FileService fileService;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
 
     public FhirUserDto fhirPatientToFhirUserDto(Patient patient) {
         FhirUserDto fhirUserDto = new FhirUserDto();
 
-        fhirUserDto.setIdentifier(this.encryptionUtil.decryptIfNotAlready(patient.getIdentifier().get(0).getValue()));
+        fhirUserDto.setIdentifier(this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(patient.getIdentifier().get(0).getValue()));
 
         fhirUserDto.setName(patient.getName().get(0).getGiven().get(0).getValue());
         fhirUserDto.setSurname(patient.getName().get(0).getFamily());
@@ -56,7 +56,7 @@ public class PatientMapper {
     }
 
     public Patient createHealthscapeId(Patient patient, String userId) {
-        String encryptedUserId = this.encryptionUtil.encryptIfNotAlready(userId);
+        String encryptedUserId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(userId);
         Identifier identifier = new Identifier();
         identifier.setSystem(Config.HEALTHSCAPE_URL);
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
@@ -66,8 +66,8 @@ public class PatientMapper {
     }
 
     public Patient appUserToFhirPatient(AppUser appUser, String personalId, String patientId) {
-        String encryptedPersonalId = this.encryptionUtil.encryptIfNotAlready(personalId);
-        String encryptedPatientId = this.encryptionUtil.encryptIfNotAlready(patientId);
+        String encryptedPersonalId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(personalId);
+        String encryptedPatientId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(patientId);
 
         Patient patient = new Patient();
 

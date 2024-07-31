@@ -4,7 +4,6 @@ import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
 import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.Contract;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,6 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional
 public class FabricPatientRecordService {
 
@@ -22,7 +20,7 @@ public class FabricPatientRecordService {
         Contract contract = fabricTransactionService.getContract(email);
         System.out.println("\n");
         System.out.println("Submit Transaction: CreatePatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("CreatePatientRecord", patientRecordDto.getUserId(), patientRecordDto.getOfflineDataUrl(), patientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
+        byte[] result = contract.submitTransaction("CreatePatientRecord", patientRecordDto.getEncryptedPersonalId(), patientRecordDto.getEncryptedUserId(), patientRecordDto.getOfflineDataUrl(), patientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
         return new String(result);
     }
 
@@ -30,7 +28,7 @@ public class FabricPatientRecordService {
         Contract contract = fabricTransactionService.getContract(email);
         System.out.println("\n");
         System.out.println("Submit Transaction: UpdatePatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("UpdatePatientRecord", updatedPatientRecordDto.getUserId(), updatedPatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
+        byte[] result = contract.submitTransaction("UpdatePatientRecord", updatedPatientRecordDto.getEncryptedUserId(), updatedPatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
         return new String(result);
     }
 

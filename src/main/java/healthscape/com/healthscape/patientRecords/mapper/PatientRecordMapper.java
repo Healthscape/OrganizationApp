@@ -5,7 +5,7 @@ import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.fhir.mapper.FhirMapper;
 import healthscape.com.healthscape.patientRecords.dtos.*;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ import java.util.Date;
 public class PatientRecordMapper {
 
     private final FhirMapper fhirMapper;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
     private final EncounterMapper encounterMapper;
 
     public PatientRecordPreview mapToPreview(Patient patient) {
@@ -29,7 +29,7 @@ public class PatientRecordMapper {
                 break;
             }
         }
-        String personalId = encryptionUtil.decrypt(patient.getIdentifier().get(0).getValue());
+        String personalId = encryptionConfig.defaultEncryptionUtil().decrypt(patient.getIdentifier().get(0).getValue());
         String name = patient.getName().get(0).getGiven().get(0).getValue();
         String surname = patient.getName().get(0).getFamily();
         Date birthDate = patient.getBirthDate();

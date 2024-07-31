@@ -11,7 +11,7 @@ import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class UserService implements UserDetailsService {
     private final UsersMapper usersMapper;
     private final PasswordEncoder passwordEncoder;
     private final TokenUtils tokenUtils;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
     private final FileService fileService;
 
     public AppUser getUserFromToken(String token) {
@@ -140,7 +140,7 @@ public class UserService implements UserDetailsService {
     }
 
     public AppUser getUserById(String encryptedUserId) {
-        String userId = this.encryptionUtil.decryptIfNotAlready(encryptedUserId);
+        String userId = this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(encryptedUserId);
         Optional<AppUser> user = userRepo.findById(UUID.fromString(userId));
         return user.orElse(null);
     }

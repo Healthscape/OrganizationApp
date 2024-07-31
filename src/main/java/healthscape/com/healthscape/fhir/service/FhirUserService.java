@@ -1,5 +1,6 @@
 package healthscape.com.healthscape.fhir.service;
 
+import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import healthscape.com.healthscape.fabric.dto.RegistrationChaincodeDto;
@@ -11,7 +12,7 @@ import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import healthscape.com.healthscape.users.service.SpecialtyService;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import lombok.RequiredArgsConstructor;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Identifier;
@@ -28,7 +29,7 @@ public class FhirUserService {
     private final PractitionerMapper practitionerMapper;
     private final SpecialtyService specialtyService;
     private final FhirConfig fhirConfig;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
 
     public RegistrationChaincodeDto registerPatient(AppUser appUser, String personalId) throws Exception {
         Patient patientData = getPatientWithPersonalId(personalId);
@@ -43,7 +44,7 @@ public class FhirUserService {
 
 
     public Patient getPatientWithPersonalId(String personalId) {
-        String encryptedId = encryptionUtil.encryptIfNotAlready(personalId);
+        String encryptedId = encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(personalId);
         Bundle bundle = this.fhirClient.search().forResource(Patient.class).where(Patient.IDENTIFIER.exactly().systemAndValues("http://hl7.org/fhir/sid/us-ssn", encryptedId)).returnBundle(Bundle.class).execute();
         System.out.println(fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
         for (Bundle.BundleEntryComponent e : bundle.getEntry()) {
@@ -59,12 +60,12 @@ public class FhirUserService {
     }
 
     public Patient getPatient(String id) {
-        String decryptedId = this.encryptionUtil.decryptIfNotAlready(id);
+        String decryptedId = this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(id);
         return this.fhirClient.read().resource(Patient.class).withId(decryptedId).execute();
     }
 
     public Practitioner getPractitioner(String id) {
-        String encryptedId = encryptionUtil.encryptIfNotAlready(id);
+        String encryptedId = encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(id);
         Bundle bundle = this.fhirClient.search().forResource(Practitioner.class).where(Practitioner.IDENTIFIER.exactly().systemAndValues(Config.HEALTHSCAPE_URL, encryptedId)).returnBundle(Bundle.class).execute();
         System.out.println(fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle));
         for (Bundle.BundleEntryComponent e : bundle.getEntry()) {
@@ -86,7 +87,7 @@ public class FhirUserService {
         this.fhirClient.update().resource(updatePractitioner).execute();
     }
 
-    private String addHealthscapeId(AppUser appUser, Patient patient) throws Exception {
+    public String addHealthscapeId(AppUser appUser, Patient patient) throws Exception {
         for (Identifier id : patient.getIdentifier()) {
             if (id.getSystem().equals(Config.HEALTHSCAPE_URL)) {
                 throw new Exception("User is already registered at Healthscape!");
@@ -104,5 +105,17 @@ public class FhirUserService {
         Patient patient = patientMapper.appUserToFhirPatient(appUser, personalId, userId);
         MethodOutcome methodOutcome = this.fhirClient.update().resource(patient).execute();
         return methodOutcome.getResource().getIdElement().getIdPart();
+    }
+
+    public String patientToJson(Patient patient){
+        IParser parser = fhirConfig.getFhirContext().newJsonParser();
+        String jsonPatient = parser.encodeResourceToString(patient);
+        return jsonPatient;
+    }
+
+    public Patient jsonToPatient(String jsonPatient){
+        IParser parser = fhirConfig.getFhirContext().newJsonParser();
+        Patient parsed = parser.parseResource(Patient.class, jsonPatient);
+        return parsed;
     }
 }

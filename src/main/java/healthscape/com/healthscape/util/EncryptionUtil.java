@@ -1,21 +1,17 @@
 package healthscape.com.healthscape.util;
 
-import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
-@Service
 public class EncryptionUtil {
 
-    private static final String SECRET_KEY_STRING = "SFYQFpSdI5JVlhcHXsrKMbamj82SQPuG";
+    // private static final String SECRET_KEY_STRING = "SFYQFpSdI5JVlhcHXsrKMbamj82SQPuG";
     private final SecretKey key;
 
-    public EncryptionUtil() {
-        byte[] decodedKey = Base64.getDecoder().decode(SECRET_KEY_STRING);
-        this.key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    public EncryptionUtil(SecretKey key) {
+        this.key = key;
     }
 
     public String encryptIfNotAlready(String plainText) {

@@ -3,7 +3,7 @@ package healthscape.com.healthscape.fabric.service;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hyperledger.fabric.gateway.*;
@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 public class FabricTransactionService {
 
     private final UserService userService;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
 
     public Contract getContract(String email) throws Exception {
         if (email.isBlank() || email.isEmpty()) {
@@ -34,7 +34,7 @@ public class FabricTransactionService {
 
         Gateway.Builder builder = Gateway.createBuilder();
         AppUser user = userService.getUserByEmail(email);
-        String userId = this.encryptionUtil.encryptIfNotAlready(user.getId().toString());
+        String userId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(user.getId().toString());
         builder.identity(wallet, userId).networkConfig(networkConfigPath).discovery(false);
 
         Gateway gateway = builder.connect();

@@ -8,10 +8,12 @@ import healthscape.com.healthscape.encounter.dto.*;
 import healthscape.com.healthscape.encounter.mapper.EncounterMapper;
 import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
 import healthscape.com.healthscape.fhir.config.FhirConfig;
+import healthscape.com.healthscape.patientRecords.dtos.AllergyDto;
+import healthscape.com.healthscape.patientRecords.dtos.ConditionDto;
 import healthscape.com.healthscape.patientRecords.dtos.MedicationAdministrationDto;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionUtil;
+import healthscape.com.healthscape.util.EncryptionConfig;
 import healthscape.com.healthscape.util.HashUtil;
 import lombok.RequiredArgsConstructor;
 import org.hl7.fhir.r4.model.*;
@@ -28,7 +30,7 @@ public class FhirPatientRecordService {
 
     private final IGenericClient fhirClient;
     private final FhirConfig fhirConfig;
-    private final EncryptionUtil encryptionUtil;
+    private final EncryptionConfig encryptionConfig;
     private final EncounterMapper encounterMapper;
     private final FhirUserService fhirUserService;
 
@@ -36,9 +38,9 @@ public class FhirPatientRecordService {
     public ChaincodePatientRecordDto createPatientRecordUpdateDto(String recordId, String userId) {
         Bundle bundle = getPatientRecord(recordId);
         String hashedData = this.getPatientDataHash(bundle);
-        String offlineDataUrl = this.encryptionUtil.encryptIfNotAlready(recordId);
-        String encryptedUserId = this.encryptionUtil.encryptIfNotAlready(userId);
-        return new ChaincodePatientRecordDto(offlineDataUrl, hashedData, encryptedUserId);
+        String offlineDataUrl = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(recordId);
+        String encryptedUserId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(userId);
+        return new ChaincodePatientRecordDto(offlineDataUrl, hashedData, encryptedUserId, "lala");
     }
 
     public String getPatientDataHash(Bundle bundle) {
@@ -50,7 +52,7 @@ public class FhirPatientRecordService {
 
     public Bundle getPatientRecord(String recordId) {
         if (recordId.length() == 64) {
-            recordId = this.encryptionUtil.decryptIfNotAlready(recordId);
+            recordId = this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(recordId);
         }
         String url = this.fhirClient.getServerBase() + "/Patient/" + recordId + "/$everything";
         return this.fhirClient.search().byUrl(url).returnBundle(Bundle.class).execute();
@@ -62,8 +64,8 @@ public class FhirPatientRecordService {
         MethodOutcome methodOutcome = saveEncounterResources(encounter);
         String encounterId = methodOutcome.getResource().getIdElement().getIdPart();
 
-        String recordId = this.encryptionUtil.decryptIfNotAlready(patientRecord.getOfflineDataUrl());
-        String patientId = this.encryptionUtil.decryptIfNotAlready(encryptedPatientId);
+        String recordId = this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(patientRecord.getOfflineDataUrl());
+        String patientId = this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(encryptedPatientId);
         ChaincodePatientRecordDto updatedPatientRecord = createPatientRecordUpdateDto(recordId, patientId);
         return new StartEncounterDto(encounterId, updatedPatientRecord);
     }
@@ -244,5 +246,37 @@ public class FhirPatientRecordService {
         condition.setClinicalStatus(codeableConceptStatus);
         condition.setAbatement(new DateTimeType(patientRecordUpdateDto.getDate()));
         this.fhirClient.update().resource(condition).execute();
+    }
+
+    public List<ConditionDto> getConditionHistory(String patientId) {
+        Bundle response = this.fhirClient.search()
+                .forResource(Condition.class)
+                .where(Patient.IDENTIFIER.exactly().systemAndValues(Config.HEALTHSCAPE_URL, patientId))
+                .returnBundle(Bundle.class)
+                .execute();
+        List<ConditionDto> conditionDtos = new ArrayList<>();
+        for (Bundle.BundleEntryComponent entry : response.getEntry()) {
+            if (entry.getResource() instanceof Condition condition) {
+                ConditionDto conditionDto = this.encounterMapper.mapToConditionDto(condition);
+                conditionDtos.add(conditionDto);
+            }
+        }
+        return conditionDtos;
+    }
+
+    public List<AllergyDto> geAllergyHistory(String patientId) {
+        Bundle response = this.fhirClient.search()
+                .forResource(AllergyIntolerance.class)
+                .where(Patient.IDENTIFIER.exactly().systemAndValues(Config.HEALTHSCAPE_URL, patientId))
+                .returnBundle(Bundle.class)
+                .execute();
+        List<AllergyDto> allergyDtos = new ArrayList<>();
+        for (Bundle.BundleEntryComponent entry : response.getEntry()) {
+            if (entry.getResource() instanceof AllergyIntolerance allergy) {
+                AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto(allergy);
+                allergyDtos.add(allergyDto);
+            }
+        }
+        return allergyDtos;
     }
 }
