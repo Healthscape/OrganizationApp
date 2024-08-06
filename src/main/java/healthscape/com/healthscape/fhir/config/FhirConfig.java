@@ -13,6 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.HostnameVerifier;
@@ -23,6 +24,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 @Component
+@Configuration
 @AllArgsConstructor
 @Getter
 public class FhirConfig {
@@ -38,17 +40,17 @@ public class FhirConfig {
         return context;
     }
 
-    @Bean
-    public IGenericClient getFhirClient(FhirContext fhirContext) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(keyStore, new TrustSelfSignedStrategy()).build();
+    // @Bean
+    // public IGenericClient getFhirClient(FhirContext fhirContext) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    //     SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(keyStore, new TrustSelfSignedStrategy()).build();
 
-        HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
-        SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
+    //     HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
+    //     SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
 
-        CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslFactory).build();
-        fhirContext.getRestfulClientFactory().setHttpClient(httpClient);
+    //     CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslFactory).build();
+    //     fhirContext.getRestfulClientFactory().setHttpClient(httpClient);
 
-        return fhirContext.newRestfulGenericClient(Config.FHIR_SERVER);
-    }
+    //     return fhirContext.newRestfulGenericClient(Config.FHIR_SERVER);
+    // }
 }
 

@@ -31,61 +31,61 @@ public class EncounterService {
     private final PatientRecordChaincodeMapper patientRecordChaincodeMapper;
     private final FhirPatientRecordService fhirPatientRecordService;
 
-    public PatientRecordUpdateDto startNewEncounter(String token, String requestId) throws Exception {
-        AppUser user = userService.getUserFromToken(token);
-        String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-        ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+    // public PatientRecordUpdateDto startNewEncounter(String token, String requestId) throws Exception {
+    //     AppUser user = userService.getUserFromToken(token);
+    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
+    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
 
-        if (patientRecord == null) {
-            throw new Exception("Unauthorized access");
-        }
+    //     if (patientRecord == null) {
+    //         throw new Exception("Unauthorized access");
+    //     }
 
-        StartEncounterDto startEncounterDto = this.fhirPatientRecordService.updatePatientRecordWithEncounter(patientRecord.getEncryptedUserId(), patientRecord, user);
-        this.fabricPatientRecordService.updatePatientRecord(user.getEmail(), startEncounterDto.getChaincodePatientRecordDto());
-        return new PatientRecordUpdateDto(startEncounterDto.getEncounterId(), patientRecord.getEncryptedUserId());
-    }
+    //     StartEncounterDto startEncounterDto = this.fhirPatientRecordService.updatePatientRecordWithEncounter(patientRecord.getHashedUserId(), patientRecord, user);
+    //     this.fabricPatientRecordService.updatePatientRecord(user.getEmail(), startEncounterDto.getChaincodePatientRecordDto());
+    //     return new PatientRecordUpdateDto(startEncounterDto.getEncounterId(), patientRecord.getHashedUserId());
+    // }
 
-    public void endEncounter(String token, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
-        AppUser user = userService.getUserFromToken(token);
-        Encounter encounter = this.fhirPatientRecordService.getEncounter(patientRecordUpdateDto.getEncounterId());
+    // public void endEncounter(String token, PatientRecordUpdateDto patientRecordUpdateDto) throws Exception {
+    //     AppUser user = userService.getUserFromToken(token);
+    //     Encounter encounter = this.fhirPatientRecordService.getEncounter(patientRecordUpdateDto.getEncounterId());
 
-        if (encounter.getStatus().equals(Encounter.EncounterStatus.FINISHED)) {
-            throw new Exception("Encounter already finished.");
-        }
+    //     if (encounter.getStatus().equals(Encounter.EncounterStatus.FINISHED)) {
+    //         throw new Exception("Encounter already finished.");
+    //     }
 
-        ChaincodePatientRecordDto updatedPatientRecord = this.fhirPatientRecordService.updatePatientRecordsEncounter(patientRecordUpdateDto, encounter);
-        this.fabricPatientRecordService.updatePatientRecord(user.getEmail(), updatedPatientRecord);
-    }
+    //     ChaincodePatientRecordDto updatedPatientRecord = this.fhirPatientRecordService.updatePatientRecordsEncounter(patientRecordUpdateDto, encounter);
+    //     this.fabricPatientRecordService.updatePatientRecord(user.getEmail(), updatedPatientRecord);
+    // }
 
-    public List<MedicationAdministrationDto> getMedicationAdministrationHistory(String token, String requestId) throws Exception {
-        AppUser user = userService.getUserFromToken(token);
-        String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-        ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-        if(patientRecord != null){
-            return this.fhirPatientRecordService.getMedicationAdministrationHistory(patientRecord.getEncryptedUserId());
-        }
-        return null;
-    }
+    // public List<MedicationAdministrationDto> getMedicationAdministrationHistory(String token, String requestId) throws Exception {
+    //     AppUser user = userService.getUserFromToken(token);
+    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
+    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+    //     if(patientRecord != null){
+    //         return this.fhirPatientRecordService.getMedicationAdministrationHistory(patientRecord.getHashedUserId());
+    //     }
+    //     return null;
+    // }
 
-    public List<ConditionDto> getConditionHistory(String token, String requestId) throws Exception {
-        AppUser user = userService.getUserFromToken(token);
-        String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-        ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-        if(patientRecord != null){
-            return this.fhirPatientRecordService.getConditionHistory(patientRecord.getEncryptedUserId());
-        }
-        return null;
-    }
+    // public List<ConditionDto> getConditionHistory(String token, String requestId) throws Exception {
+    //     AppUser user = userService.getUserFromToken(token);
+    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
+    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+    //     if(patientRecord != null){
+    //         return this.fhirPatientRecordService.getConditionHistory(patientRecord.getHashedUserId());
+    //     }
+    //     return null;
+    // }
 
-    public List<AllergyDto> getAllergyHistory(String token, String requestId) throws Exception {
-        AppUser user = userService.getUserFromToken(token);
-        String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-        ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-        if(patientRecord != null){
-            return this.fhirPatientRecordService.geAllergyHistory(patientRecord.getEncryptedUserId());
-        }
-        return null;
-    }
+    // public List<AllergyDto> getAllergyHistory(String token, String requestId) throws Exception {
+    //     AppUser user = userService.getUserFromToken(token);
+    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
+    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
+    //     if(patientRecord != null){
+    //         return this.fhirPatientRecordService.geAllergyHistory(patientRecord.getHashedUserId());
+    //     }
+    //     return null;
+    // }
 
 
 }

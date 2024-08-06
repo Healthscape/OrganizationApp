@@ -1,6 +1,8 @@
 package healthscape.com.healthscape.fabric.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import healthscape.com.healthscape.util.HashWithSalt;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,5 +13,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MyChaincodePatientRecordDto {
     private String offlineDataUrl;
-    private String hashedData;
+    private HashWithSalt dataHashWithSalt;
 }

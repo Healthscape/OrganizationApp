@@ -22,4 +22,12 @@ public class FhirMapper {
         return patientMapper.fhirPatientToFhirUserDto(patient);
     }
 
+    public Patient updatePatient(FhirUserDto userDto, Patient patient) {
+        return patientMapper.mapUpdatedToPatient(patient, userDto);
+    }
+
+    public Practitioner updatePractitioner(FhirUserDto userDto, Practitioner practitioner) {
+        return practitionerMapper.mapUpdatedToPractitioner(practitioner, userDto);
+    }
+
 }

@@ -3,8 +3,12 @@ package healthscape.com.healthscape.util;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Base64;
 
+@Slf4j
 public class EncryptionUtil {
 
     // private static final String SECRET_KEY_STRING = "SFYQFpSdI5JVlhcHXsrKMbamj82SQPuG";
@@ -23,7 +27,7 @@ public class EncryptionUtil {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] cipherText = cipher.doFinal(plainText.getBytes());
             String base64Str = Base64.getUrlEncoder().withoutPadding().encodeToString(cipherText);
-            return base64Str.replace('_', '.');
+            return base64Str;
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -42,7 +46,6 @@ public class EncryptionUtil {
         try {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            cipherText = cipherText.replace('.', '_');
             byte[] decodedBytes = Base64.getUrlDecoder().decode(cipherText);
             byte[] plainText = cipher.doFinal(decodedBytes);
             return new String(plainText);

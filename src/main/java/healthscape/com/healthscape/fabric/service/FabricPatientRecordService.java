@@ -1,66 +1,119 @@
 package healthscape.com.healthscape.fabric.service;
 
+import healthscape.com.healthscape.fabric.dao.IdentifiersDAO;
+import healthscape.com.healthscape.fabric.dao.PatientRecordDAO;
 import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
 import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
+import healthscape.com.healthscape.fabric.util.FabricTransactionType;
+import healthscape.com.healthscape.fhir.dtos.NewPatientRecordDTO;
+import healthscape.com.healthscape.ipfs.IPFSService;
+import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.util.EncryptionConfig;
+import healthscape.com.healthscape.util.HashUtil;
+import healthscape.com.healthscape.util.HashWithSalt;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.hyperledger.fabric.gateway.Contract;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Date;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class FabricPatientRecordService {
 
     private final FabricTransactionService fabricTransactionService;
+    private final EncryptionConfig encryptionConfig;
+    private final ObjectMapper objectMapper;
 
-    public String createPatientRecord(String email, ChaincodePatientRecordDto patientRecordDto) throws Exception {
-        Contract contract = fabricTransactionService.getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: CreatePatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("CreatePatientRecord", patientRecordDto.getEncryptedPersonalId(), patientRecordDto.getEncryptedUserId(), patientRecordDto.getOfflineDataUrl(), patientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
+    private final Map<FabricTransactionType, String> fabricTransactions = Map.of(
+            FabricTransactionType.SUBMIT, "Submit Transaction",
+            FabricTransactionType.EVALUATE, "Evaluate Transaction");
+
+    public String createPatientRecord(String userId, PatientRecordDAO patientRecordDAO, IdentifiersDAO identifiersDAO) throws Exception {
+        Contract contract = fabricTransactionService.getContract(userId);
+        String methodName = "CreatePatientRecord";
+        print(FabricTransactionType.SUBMIT, methodName);
+
+        String hashedUserId = HashUtil.hashData(userId);
+        byte[] result = contract.submitTransaction(
+                                    methodName,
+                                    patientRecordDAO.getHashedIdentifier(),
+                                    hashedUserId,
+                                    patientRecordDAO.getOfflineDataUrl(),
+                                    patientRecordDAO.getHashedData(),
+                                    patientRecordDAO.getSalt(),
+                                    identifiersDAO.getOfflineIdentifierUrl(),
+                                    identifiersDAO.getHashedIdentifiers(),
+                                    identifiersDAO.getSalt(),
+                                    String.valueOf(new Date().getTime()));
+
+        PatientRecordDAO savedPatientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
+        return encryptionConfig.encryptDefaultData(savedPatientRecordDAO.getOfflineDataUrl());
+    }
+
+    public String getMe(String userId) throws Exception {
+        Contract contract = fabricTransactionService.getContract(userId);
+        String methodName = "GetMyPatientRecord";
+        print(FabricTransactionType.EVALUATE, methodName);
+        byte[] result = contract.evaluateTransaction(methodName);
+        PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
+        return patientRecordDAO.getOfflineDataUrl();
+    }
+
+    public String updateMyPatientRecord(String userId, PatientRecordDAO updatedPatient)
+            throws Exception {
+        Contract contract = fabricTransactionService.getContract(userId);
+        String methodName = "UpdateMyPatientRecord";
+        print(FabricTransactionType.EVALUATE, methodName);
+        byte[] result = contract.submitTransaction(
+                                    methodName,
+                                    updatedPatient.getOfflineDataUrl(),
+                                    updatedPatient.getHashedData(),
+                                    updatedPatient.getSalt(),
+                                    String.valueOf(new Date().getTime()));
         return new String(result);
     }
 
-    public String updatePatientRecord(String email, ChaincodePatientRecordDto updatedPatientRecordDto) throws Exception {
-        Contract contract = fabricTransactionService.getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: UpdatePatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("UpdatePatientRecord", updatedPatientRecordDto.getEncryptedUserId(), updatedPatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
-        return new String(result);
-    }
+    // public String updatePatientRecord(String userId, ChaincodePatientRecordDto updatedPatientRecordDto)
+    //         throws Exception {
+    //     Contract contract = fabricTransactionService.getContract(userId);
+    //     String methodName = "UpdatePatientRecord";
+    //     print(FabricTransactionType.EVALUATE, methodName);
+    //     byte[] result = contract.submitTransaction(
+    //                                 methodName,
+    //                                 updatedPatientRecordDto.getHashedUserId(),
+    //                                 updatedPatientRecordDto.getHashedData(),
+    //                                 String.valueOf(new Date().getTime()));
+    //     return new String(result);
+    // }
 
-    public String getPatientRecord(String email, String recordId) throws Exception {
-        Contract contract = fabricTransactionService.getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: GetPatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.evaluateTransaction("GetPatientRecord", recordId);
-        return new String(result);
-    }
+    // public String getPatientRecord(String userId, String recordId) throws Exception {
+    //     Contract contract = fabricTransactionService.getContract(userId);
+    //     String methodName = "GetPatientRecord";
+    //     print(FabricTransactionType.EVALUATE, methodName);
+    //     byte[] result = contract.evaluateTransaction(methodName, recordId);
+    //     PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
+    //     return encryptionConfig.encryptDefaultData(patientRecordDAO.getOfflineDataUrl());
+    // }
 
-    public String getMyPatientRecord(String email) throws Exception {
-        Contract contract = fabricTransactionService.getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: GetMyPatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.evaluateTransaction("GetMyPatientRecord");
-        return new String(result);
-    }
+    // public String previewPatientRecord(String email) throws Exception {
+    //     Contract contract = fabricTransactionService.getContract(email);
+    //     String methodName = "PreviewPatientRecord";
+    //     print(FabricTransactionType.EVALUATE, methodName);
+    //     byte[] result = contract.evaluateTransaction(methodName);
+    //     return new String(result);
+    // }
 
-    public String updateMyPatientRecord(String email, MyChaincodePatientRecordDto updatedMyPatientRecordDto) throws Exception {
-        Contract contract = fabricTransactionService.getContract(email);
+    private void print(FabricTransactionType type, String methodName) {
         System.out.println("\n");
-        System.out.println("Submit Transaction: UpdateMyPatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.submitTransaction("UpdateMyPatientRecord", updatedMyPatientRecordDto.getHashedData(), String.valueOf(new Date().getTime()));
-        return new String(result);
-    }
-
-    public String previewPatientRecord(String email) throws Exception {
-        Contract contract = fabricTransactionService.getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: PreviewPatientRecord creates new access request if it does not exist.");
-        byte[] result = contract.evaluateTransaction("PreviewPatientRecord");
-        return new String(result);
+        System.out.println(fabricTransactions.get(type) + ": " + methodName);
     }
 }

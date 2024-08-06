@@ -34,9 +34,9 @@ public class UserApi {
 
 
     @GetMapping("/me/detailed")
-    public ResponseEntity<?> getMe(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+    public ResponseEntity<?> getMeDetailed(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         try {
-            FhirUserDto me = userOrchestrator.getMe(token);
+            FhirUserDto me = userOrchestrator.getMeDetailed(token);
             return ResponseEntity.ok().body(me);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));

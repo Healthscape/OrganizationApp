@@ -1,10 +1,14 @@
 package healthscape.com.healthscape.fabric.util;
 
 import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.util.EncryptionConfig;
+import lombok.extern.slf4j.Slf4j;
+
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallets;
 import org.hyperledger.fabric.gateway.X509Identity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -13,6 +17,9 @@ import java.nio.file.Paths;
 @Component
 public class WalletUtil {
     private Wallet wallet;
+
+    @Autowired
+    private EncryptionConfig encryptionConfig;
 
     public WalletUtil() {
         try {
@@ -43,7 +50,8 @@ public class WalletUtil {
     }
 
     public X509Identity getAdminIdentity() throws IOException {
-        return (X509Identity) wallet.get(Config.ADMIN_ID);
+        String encryptedId = encryptionConfig.encryptDefaultData(Config.ADMIN_ID);
+        return (X509Identity) wallet.get(encryptedId);
     }
 
     public boolean doesExistById(String userIdentityId) throws IOException {
@@ -59,6 +67,7 @@ public class WalletUtil {
     }
 
     public boolean doesAdminExist() throws IOException {
-        return wallet.get(Config.ADMIN_ID) != null;
+        String encryptedId = encryptionConfig.encryptDefaultData(Config.ADMIN_ID);
+        return wallet.get(encryptedId) != null;
     }
 }

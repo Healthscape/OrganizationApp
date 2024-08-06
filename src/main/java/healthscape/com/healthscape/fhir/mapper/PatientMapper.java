@@ -55,20 +55,23 @@ public class PatientMapper {
         return fhirUserDto;
     }
 
-    public Patient createHealthscapeId(Patient patient, String userId) {
-        String encryptedUserId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(userId);
+    public List<Identifier> appUserToFhirIdentifiers(AppUser appUser, String personalId, String userId){
+        List<Identifier> identifiers = new ArrayList<>();
         Identifier identifier = new Identifier();
-        identifier.setSystem(Config.HEALTHSCAPE_URL);
+        identifier.setSystem("http://hl7.org/fhir/sid/us-ssn");
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(encryptedUserId);
-        patient.getIdentifier().add(identifier);
-        return patient;
+        identifier.setValue(personalId);
+        identifiers.add(identifier);
+        Identifier patientIdentifier = new Identifier();
+        patientIdentifier.setSystem(Config.HEALTHSCAPE_URL);
+        patientIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        patientIdentifier.setValue(userId);
+        identifiers.add(patientIdentifier);
+
+        return identifiers;
     }
 
-    public Patient appUserToFhirPatient(AppUser appUser, String personalId, String patientId) {
-        String encryptedPersonalId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(personalId);
-        String encryptedPatientId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(patientId);
-
+    public Patient appUserToFhirPatient(AppUser appUser, String personalId) {
         Patient patient = new Patient();
 
         patient.setId(UUID.randomUUID().toString());
@@ -77,13 +80,8 @@ public class PatientMapper {
         Identifier identifier = new Identifier();
         identifier.setSystem("http://hl7.org/fhir/sid/us-ssn");
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(encryptedPersonalId);
+        identifier.setValue(personalId);
         identifiers.add(identifier);
-        Identifier patientIdentifier = new Identifier();
-        patientIdentifier.setSystem(Config.HEALTHSCAPE_URL);
-        patientIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        patientIdentifier.setValue(encryptedPatientId);
-        identifiers.add(patientIdentifier);
         patient.setIdentifier(identifiers);
 
         patient.addName().addGiven(appUser.getName()).setFamily(appUser.getSurname());

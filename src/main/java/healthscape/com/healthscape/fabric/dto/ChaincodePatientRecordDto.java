@@ -1,6 +1,8 @@
 package healthscape.com.healthscape.fabric.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import healthscape.com.healthscape.util.HashWithSalt;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,12 +12,16 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 public class ChaincodePatientRecordDto extends MyChaincodePatientRecordDto {
-    private String encryptedUserId;
-    private String encryptedPersonalId;
+    private String hashedUserId;
+    private String personalId;
+    private HashWithSalt identifiersHashedWithSalt;
+    private String offlineIdentifiersUrl;
 
-    public ChaincodePatientRecordDto(String offlineDataUrl, String hashedData, String encryptedUserId, String encryptedPersonalId) {
-        super(offlineDataUrl, hashedData);
-        this.encryptedUserId = encryptedUserId;
-        this.encryptedPersonalId = encryptedPersonalId;
+    public ChaincodePatientRecordDto(String personalId, String hashedUserId, String offlineDataUrl, HashWithSalt dataHashedWithSalt, String offlineIdentifiersUrl, HashWithSalt identifiersHashedWithSalt) {
+        super(offlineDataUrl, dataHashedWithSalt);
+        this.hashedUserId = hashedUserId;
+        this.personalId = personalId;
+        this.identifiersHashedWithSalt = identifiersHashedWithSalt;
+        this.offlineIdentifiersUrl = offlineIdentifiersUrl;
     }
 }

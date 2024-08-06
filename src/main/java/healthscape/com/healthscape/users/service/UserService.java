@@ -149,4 +149,8 @@ public class UserService implements UserDetailsService {
         AppUser updatedUser = this.usersMapper.updateUser(user, userDto, imagePath);
         userRepo.save(updatedUser);
     }
+
+    public void updateUser(AppUser user) {
+        userRepo.save(user);
+    }
 }

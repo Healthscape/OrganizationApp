@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.hyperledger.fabric.gateway.*;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -18,13 +17,12 @@ import java.nio.file.Paths;
 @Transactional
 public class FabricTransactionService {
 
-    private final UserService userService;
     private final EncryptionConfig encryptionConfig;
 
-    public Contract getContract(String email) throws Exception {
-        if (email.isBlank() || email.isEmpty()) {
-            System.out.println("Email cannot be empty.");
-            throw new Exception("Email cannot be empty.");
+    public Contract getContract(String userId) throws Exception {
+        if (userId.isBlank() || userId.isEmpty()) {
+            System.out.println("UserID cannot be empty.");
+            throw new Exception("UserID cannot be empty.");
         }
         // Load a file system based wallet for managing identities.
         Path walletPath = Paths.get(Config.WALLET_DIRECTORY);
@@ -33,118 +31,11 @@ public class FabricTransactionService {
         Path networkConfigPath = Paths.get(Config.NETWORK_CONFIG_PATH);
 
         Gateway.Builder builder = Gateway.createBuilder();
-        AppUser user = userService.getUserByEmail(email);
-        String userId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(user.getId().toString());
-        builder.identity(wallet, userId).networkConfig(networkConfigPath).discovery(false);
+        String encryptedUserId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(userId);
+        builder.identity(wallet, encryptedUserId).networkConfig(networkConfigPath).discovery(false);
 
         Gateway gateway = builder.connect();
         Network network = gateway.getNetwork(Config.CHANNEL_NAME);
         return network.getContract(Config.CHAINCODE_NAME);
-    }
-
-    public void queryAssets(String email) throws Exception {
-
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction:QueryAssets assets of size 15");
-        result = contract.evaluateTransaction("QueryAssets", "{\"selector\":{\"size\":15}}");
-        System.out.println("result: " + new String(result));
-    }
-
-    public void test(String email) throws Exception {
-
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction:QueryAssets assets of size 15");
-        result = contract.evaluateTransaction("CreatePatientRecord");
-        System.out.println("result: " + new String(result));
-    }
-
-    public void getAssetHistory(String email, String id) throws Exception {
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction:GetAssetHistory " + id);
-        result = contract.evaluateTransaction("GetAssetHistory", id);
-        System.out.println("result: " + new String(result));
-    }
-
-    public void queryAssetsByOwner(String email, String owner) throws Exception {
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction:QueryAssetsByOwner " + owner);
-        result = contract.evaluateTransaction("QueryAssetsByOwner", owner);
-        System.out.println("result: " + new String(result));
-    }
-
-    public void transferAssetByColor(String email, String color, String newOwner) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: TransferAssetByColor " + color + " assets > newOwner " + newOwner);
-        //        contract.submitTransaction("TransferAssetByColor", "yellow", "Michel");
-        contract.submitTransaction("TransferAssetByColor", color, newOwner);
-    }
-
-    public void transferAsset(String email, String id, String newOwner) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: TransferAsset " + id + " to owner " + newOwner);
-        // TransferAsset transfers an asset with given ID to new owner Tom
-        //        contract.submitTransaction("TransferAsset", "asset2", "Tom");
-        contract.submitTransaction("TransferAsset", id, newOwner);
-    }
-
-    public void deleteAsset(String email, String id) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: DeleteAsset " + id);
-        contract.submitTransaction("DeleteAsset", id);
-    }
-
-    public void assetExists(String email, String id) throws Exception {
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction: AssetExists " + id);
-        // AssetExists returns "true" if an asset with given assetID exist
-        result = contract.evaluateTransaction("AssetExists", id);
-        System.out.println("result: " + new String(result));
-    }
-
-    public void readAsset(String email, String id) throws Exception {
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        System.out.println("Evaluate Transaction: ReadAsset " + id);
-        // ReadAsset returns an asset with given assetID
-        result = contract.evaluateTransaction("ReadAsset", id);
-        System.out.println("result: " + new String(result));
-    }
-
-    public void createAsset(String email, String id) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: CreateAsset " + id);
-        // CreateAsset creates an asset with ID asset13, color yellow, owner Tom, size 5 and appraisedValue of 1300
-        contract.submitTransaction("CreateAsset", id, "yellow", "5", "Tom", "1300");
-    }
-
-    public void getAssetsByRange(String email) throws Exception {
-        Contract contract = getContract(email);
-        byte[] result;
-        System.out.println("\n");
-        result = contract.evaluateTransaction("GetAssetsByRange", "", "");
-        String jsonString = new String(result, StandardCharsets.UTF_8);
-        System.out.println("result: " + jsonString);
-    }
-
-    public void initLedger(String email) throws Exception {
-        Contract contract = getContract(email);
-        System.out.println("\n");
-        System.out.println("Submit Transaction: InitLedger creates the initial set of assets on the ledger.");
-        contract.submitTransaction("InitLedger");
     }
 }

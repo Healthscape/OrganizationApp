@@ -46,6 +46,9 @@ public class AppUser implements UserDetails {
     @Column(name = "specialty")
     private String specialty;
 
+    @Column(name = "data")
+    private String data;
+
     @ManyToOne(targetEntity = Role.class, cascade = CascadeType.MERGE)
     private Role role;
 

@@ -8,6 +8,7 @@ import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
+import healthscape.com.healthscape.util.HashUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hyperledger.fabric.gateway.Identities;
@@ -69,17 +70,19 @@ public class FabricUserService {
 
         HFCAClient caClient = createCaClient();
         userService.registerAdmin();
+        String encryptedId = encryptionConfig.encryptDefaultData(Config.ADMIN_ID);
         final EnrollmentRequest enrollmentRequestTLS = new EnrollmentRequest();
         enrollmentRequestTLS.addHost(Config.CA_HOST);
         enrollmentRequestTLS.setProfile("tls");
         Enrollment enrollment = caClient.enroll(Config.ADMIN_IDENTITY_ID, Config.ADMIN_PASSWORD, enrollmentRequestTLS);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
-        walletUtil.putIdentity(Config.ADMIN_ID, user);
+        walletUtil.putIdentity(encryptedId, user);
         System.out.println("Successfully enrolled user \"admin\" and imported it into the wallet");
     }
 
     public void registerUser(AppUser appUser) throws Exception {
-        String id = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(appUser.getId().toString());
+        String id = HashUtil.hashData(appUser.getId().toString());
+        String encryptedId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(appUser.getId().toString());
         if (walletUtil.doesExistById(id)) {
             throw new HLFRegistrationException(String.format("An identity for the user %s already exists in the wallet", appUser.getId()));
         }
@@ -99,7 +102,7 @@ public class FabricUserService {
         enrollmentRequest.addAttrReq("role");
         Enrollment enrollment = caClient.enroll(id, enrollmentSecret, enrollmentRequest);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
-        walletUtil.putIdentity(id, user);
+        walletUtil.putIdentity(encryptedId, user);
         System.out.printf("Successfully enrolled user %s and imported it into the wallet \n", id);
     }
 

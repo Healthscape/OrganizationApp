@@ -16,9 +16,9 @@ public class EncryptionUtilFactory {
     private final Map<String, String> keyMap = new HashMap<>();
 
     public EncryptionUtilFactory(@Value("${encryption.keys.default}") String defaultKey,
-                                 @Value("${encryption.keys.another}") String anotherKey) {
+                                 @Value("${encryption.keys.ipfs}") String ipfsKey) {
         keyMap.put("default", defaultKey);
-        keyMap.put("another", anotherKey);
+        keyMap.put("ipfs", ipfsKey);
     }
 
     public EncryptionUtil getEncryptionUtil(String keyName) {

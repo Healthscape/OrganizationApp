@@ -13,8 +13,8 @@ public class EncryptionConfig {
     @Value("${encryption.keys.default}")
     private String defaultKeyString;
 
-    @Value("${encryption.keys.data}")
-    private String dataKeyString;
+    @Value("${encryption.keys.ipfs}")
+    private String ipfsKeyString;
 
     @Bean
     public EncryptionUtil defaultEncryptionUtil() {
@@ -23,13 +23,29 @@ public class EncryptionConfig {
     }
 
     @Bean
-    public EncryptionUtil anotherEncryptionUtil() {
-        SecretKey key = createSecretKey(dataKeyString);
+    public EncryptionUtil ipfsEncryptionUtil() {
+        SecretKey key = createSecretKey(ipfsKeyString);
         return new EncryptionUtil(key);
     }
 
     private SecretKey createSecretKey(String keyString) {
         byte[] decodedKey = Base64.getDecoder().decode(keyString);
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    }
+
+    public String encryptIPFSData(String data){
+        return this.ipfsEncryptionUtil().encryptIfNotAlready(data);
+    }
+
+    public String encryptDefaultData(String data){
+        return this.defaultEncryptionUtil().encryptIfNotAlready(data);
+    }
+
+    public String decryptIPFSData(String data){
+        return this.ipfsEncryptionUtil().decrypt(data);
+    }
+
+    public String decryptDefaultData(String data){
+        return this.defaultEncryptionUtil().decrypt(data);
     }
 }
