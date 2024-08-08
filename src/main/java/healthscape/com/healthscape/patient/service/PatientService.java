@@ -93,25 +93,28 @@ public class PatientService {
         return fabricPatientRecordService.createPatientRecord(appUser.getId().toString(), patientRecordDAO, identifiersDAO);
     }
 
-    public FhirUserDto getMe(AppUser user) throws Exception {
-        String offlineDataUrl = fabricPatientRecordService.getMe(user.getId().toString());
-        String encryptedPatientData = ipfsService.getJSONObject(offlineDataUrl);
-        String patientData = encryptionConfig.decryptIPFSData(encryptedPatientData);
-        log.info("Retreived patient: {}", patientData);
-        Patient patient = fhirUserService.parseJSON(patientData, Patient.class);
+    public FhirUserDto getUserData(AppUser user) throws Exception {
+        String offlineDataUrl = user.getData();
+        if(offlineDataUrl == "" || offlineDataUrl == null){
+            offlineDataUrl = fabricPatientRecordService.getMe(user.getId().toString());
+        }else{
+            offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
+        }
+        
+        Patient patient = getPatient(offlineDataUrl);
         return fhirMapper.map(patient);
     }
 
     public String updateMyPatientRecord(AppUser user, FhirUserDto userDto) throws Exception {
-        Patient patient = getPatient(user.getData());
+        String offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
+        Patient patient = getPatient(offlineDataUrl);
         Patient updatedPatient = fhirMapper.updatePatient(userDto, patient);
         PatientRecordDAO patientRecordDAO = savePatient(updatedPatient);
         fabricPatientRecordService.updateMyPatientRecord(user.getId().toString(), patientRecordDAO);
         return encryptionConfig.encryptDefaultData(patientRecordDAO.getOfflineDataUrl());
     }
 
-    private Patient getPatient(String encryptedUrl){
-        String offlineDataUrl = this.encryptionConfig.decryptDefaultData(encryptedUrl);
+    public Patient getPatient(String offlineDataUrl){
         String encryptedPatientData = ipfsService.getJSONObject(offlineDataUrl);
         String patientData = encryptionConfig.decryptIPFSData(encryptedPatientData);
         Patient patient = fhirUserService.parseJSON(patientData, Patient.class);

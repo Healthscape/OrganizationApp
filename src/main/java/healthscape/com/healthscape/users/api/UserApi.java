@@ -3,8 +3,6 @@ package healthscape.com.healthscape.users.api;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.shared.ResponseJson;
 import healthscape.com.healthscape.users.dto.PasswordDto;
-import healthscape.com.healthscape.users.dto.RegisterDto;
-import healthscape.com.healthscape.users.dto.RegisterPractitionerDto;
 import healthscape.com.healthscape.users.dto.UserDto;
 import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
@@ -17,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -50,25 +45,11 @@ public class UserApi {
         return ResponseEntity.ok().body(users);
     }
 
-    @PostMapping("/patient")
-    public ResponseEntity<?> registerPatient(@RequestBody RegisterDto registerDto) {
-        try {
-            userOrchestrator.registerPatient(registerDto);
-            return ResponseEntity.created(getLocationUri()).body(registerDto);
-        } catch (Exception e) {
-            return handleException(e);
-        }
-    }
-
-    @PostMapping("/practitioner")
-    @PreAuthorize("hasAuthority('register_practitioner')")
-    public ResponseEntity<?> registerPractitioner(@RequestBody RegisterPractitionerDto registerDto) {
-        try {
-            AppUser user = userOrchestrator.registerPractitioner(registerDto);
-            return ResponseEntity.created(getLocationUri()).body(usersMapper.userToUserDto(user));
-        } catch (Exception e) {
-            return handleException(e);
-        }
+    @GetMapping("")
+    @PreAuthorize("hasAuthority('get_all_patients')")
+    public ResponseEntity<List<UserDto>> getPatients() {
+        List<UserDto> users = usersMapper.usersToUserDtos(userService.getPatients());
+        return ResponseEntity.ok().body(users);
     }
 
     @PutMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -119,10 +100,6 @@ public class UserApi {
 
     private ResponseEntity<?> handleException(Exception e) {
         return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
-    }
-
-    private URI getLocationUri() {
-        return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().toUriString());
     }
 
 }

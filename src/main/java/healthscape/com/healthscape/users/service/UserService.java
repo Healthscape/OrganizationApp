@@ -11,7 +11,6 @@ import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.repo.UserRepo;
 import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionConfig;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,6 @@ public class UserService implements UserDetailsService {
     private final UsersMapper usersMapper;
     private final PasswordEncoder passwordEncoder;
     private final TokenUtils tokenUtils;
-    private final EncryptionConfig encryptionConfig;
     private final FileService fileService;
 
     public AppUser getUserFromToken(String token) {
@@ -54,7 +52,7 @@ public class UserService implements UserDetailsService {
 
     public AppUser getUserByRole(String role) {
         log.info("Fetching user with role {}", role);
-        return userRepo.findAppUserByRole_Name(role);
+        return userRepo.findAppUserByRole_Name(role).get(0);
     }
 
     public AppUser register(RegisterDto user) {
@@ -139,8 +137,7 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public AppUser getUserById(String encryptedUserId) {
-        String userId = this.encryptionConfig.defaultEncryptionUtil().decryptIfNotAlready(encryptedUserId);
+    public AppUser getUserById(String userId) {
         Optional<AppUser> user = userRepo.findById(UUID.fromString(userId));
         return user.orElse(null);
     }
@@ -152,5 +149,10 @@ public class UserService implements UserDetailsService {
 
     public void updateUser(AppUser user) {
         userRepo.save(user);
+    }
+
+    public List<AppUser> getPatients() {
+        log.info("Get all patients");
+        return userRepo.findAppUserByRole_Name("ROLE_PATIENT");
     }
 }

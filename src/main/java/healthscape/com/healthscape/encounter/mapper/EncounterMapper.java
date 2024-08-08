@@ -1,7 +1,7 @@
 package healthscape.com.healthscape.encounter.mapper;
 
 import healthscape.com.healthscape.encounter.dto.*;
-import healthscape.com.healthscape.patientRecords.dtos.*;
+import healthscape.com.healthscape.patient_records.dtos.*;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
 import org.hl7.fhir.r4.model.AllergyIntolerance.AllergyIntoleranceCriticality;

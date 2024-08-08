@@ -7,6 +7,7 @@ import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
 import healthscape.com.healthscape.fabric.util.FabricTransactionType;
 import healthscape.com.healthscape.fhir.dtos.NewPatientRecordDTO;
 import healthscape.com.healthscape.ipfs.IPFSService;
+import healthscape.com.healthscape.patient.service.PatientService;
 import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
 import healthscape.com.healthscape.util.HashUtil;
@@ -82,26 +83,28 @@ public class FabricPatientRecordService {
         return new String(result);
     }
 
-    // public String updatePatientRecord(String userId, ChaincodePatientRecordDto updatedPatientRecordDto)
+    // public String getPatientRecord(String userId, String hashedPatientUserId) throws Exception {
+    //     Contract contract = fabricTransactionService.getContract(userId);
+    //     String methodName = "GetPatientRecord";
+    //     print(FabricTransactionType.EVALUATE, methodName);
+    //     byte[] result = contract.evaluateTransaction(methodName, hashedPatientUserId);
+    //     PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
+    //     return patientRecordDAO.getOfflineDataUrl();
+    // }
+
+    // public String updatePatientRecord(String userId, PatientRecordDAO updatedPatient)
     //         throws Exception {
     //     Contract contract = fabricTransactionService.getContract(userId);
     //     String methodName = "UpdatePatientRecord";
     //     print(FabricTransactionType.EVALUATE, methodName);
     //     byte[] result = contract.submitTransaction(
     //                                 methodName,
-    //                                 updatedPatientRecordDto.getHashedUserId(),
-    //                                 updatedPatientRecordDto.getHashedData(),
+    //                                 hashedUserId,
+    //                                 updatedPatient.getOfflineDataUrl(),
+    //                                 updatedPatient.getHashedData(),
+    //                                 updatedPatient.getSalt(),
     //                                 String.valueOf(new Date().getTime()));
     //     return new String(result);
-    // }
-
-    // public String getPatientRecord(String userId, String recordId) throws Exception {
-    //     Contract contract = fabricTransactionService.getContract(userId);
-    //     String methodName = "GetPatientRecord";
-    //     print(FabricTransactionType.EVALUATE, methodName);
-    //     byte[] result = contract.evaluateTransaction(methodName, recordId);
-    //     PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
-    //     return encryptionConfig.encryptDefaultData(patientRecordDAO.getOfflineDataUrl());
     // }
 
     // public String previewPatientRecord(String email) throws Exception {

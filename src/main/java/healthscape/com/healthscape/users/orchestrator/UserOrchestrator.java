@@ -31,7 +31,7 @@ public class UserOrchestrator {
     private final PatientService patientService;
 
 
-    public void registerPatient(RegisterDto registerDto) throws Exception {
+    public AppUser registerPatient(RegisterDto registerDto) throws Exception {
         AppUser appUser = null;
         log.info("Registering patient with info {}", registerDto.toString());
         try {
@@ -52,15 +52,17 @@ public class UserOrchestrator {
             }
             throw e;
         }
+
+        return appUser;
     }
 
     public FhirUserDto getMeDetailed(String token) throws Exception {
         AppUser user = userService.getUserFromToken(token);
         FhirUserDto me = null;
         if (Objects.equals(user.getRole().getName(), "ROLE_PATIENT")) {
-            me = patientService.getMe(user);
+            me = patientService.getUserData(user);
         } else if (Objects.equals(user.getRole().getName(), "ROLE_PRACTITIONER")) {
-            me = practitionerService.getMe(user);
+            me = practitionerService.getUserData(user);
         }
         return me;
     }

@@ -36,7 +36,7 @@ public class PractitionerService {
         return encryptionConfig.encryptDefaultData(CID);
     }
 
-    public FhirUserDto getMe(AppUser user) throws JsonMappingException, JsonProcessingException {
+    public FhirUserDto getUserData(AppUser user) throws JsonMappingException, JsonProcessingException {
         String offlineDataUrl = encryptionConfig.decryptDefaultData(user.getData());
         String practitionerString = ipfsService.getJSONObject(offlineDataUrl);
         if(practitionerString == ""){
