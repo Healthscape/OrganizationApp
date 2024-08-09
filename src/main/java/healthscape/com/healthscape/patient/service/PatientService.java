@@ -7,7 +7,9 @@ import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Patient;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import healthscape.com.healthscape.fabric.dao.IdentifiersDAO;
@@ -21,6 +23,8 @@ import healthscape.com.healthscape.fhir.mapper.FhirMapper;
 import healthscape.com.healthscape.fhir.service.FhirIdentifierService;
 import healthscape.com.healthscape.fhir.service.FhirMapperService;
 import healthscape.com.healthscape.ipfs.IPFSService;
+import healthscape.com.healthscape.patient_records.model.PatientRecord;
+import healthscape.com.healthscape.patient_records.parser.PatientRecordParser;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
@@ -44,6 +48,7 @@ public class PatientService {
     private final IPFSService ipfsService;
     private final ObjectMapper objectMapper;
     private final FhirMapper fhirMapper;
+    private final PatientRecordParser parser;
 
     public IdentifiersDTO patientExist(String identifier) throws Exception{
         IdentifiersDAO identifiersDAO = fabricAdminService.userExists(identifier);
@@ -101,28 +106,29 @@ public class PatientService {
             offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
         }
         
-        Patient patient = getPatient(offlineDataUrl);
-        return fhirMapper.map(patient);
+        PatientRecord patientRecord = getPatient(offlineDataUrl);
+        return fhirMapper.map(patientRecord.getPatient());
     }
 
     public String updateMyPatientRecord(AppUser user, FhirUserDto userDto) throws Exception {
         String offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
-        Patient patient = getPatient(offlineDataUrl);
-        Patient updatedPatient = fhirMapper.updatePatient(userDto, patient);
-        PatientRecordDAO patientRecordDAO = savePatient(updatedPatient);
+        PatientRecord patientRecord = getPatient(offlineDataUrl);
+        Patient updatedPatient = fhirMapper.updatePatient(userDto, patientRecord.getPatient());
+        patientRecord.patient = updatedPatient;
+        PatientRecordDAO patientRecordDAO = savePatientRecord(patientRecord);
         fabricPatientRecordService.updateMyPatientRecord(user.getId().toString(), patientRecordDAO);
         return encryptionConfig.encryptDefaultData(patientRecordDAO.getOfflineDataUrl());
     }
 
-    public Patient getPatient(String offlineDataUrl){
+    public PatientRecord getPatient(String offlineDataUrl) throws JsonMappingException, JsonProcessingException{
         String encryptedPatientData = ipfsService.getJSONObject(offlineDataUrl);
         String patientData = encryptionConfig.decryptIPFSData(encryptedPatientData);
-        Patient patient = fhirUserService.parseJSON(patientData, Patient.class);
-        return patient;
+        PatientRecord patientRecord = parser.parsePatientRecord(patientData);
+        return patientRecord;
     }
 
-    private PatientRecordDAO savePatient(Patient patient) throws NoSuchAlgorithmException{
-        String data = fhirUserService.toJSON(patient, Patient.class);
+    private PatientRecordDAO savePatientRecord(PatientRecord patientRecord) throws NoSuchAlgorithmException, JsonMappingException, JsonProcessingException{
+        String data = parser.convertPatientRecordToJson(patientRecord);
         String encryptedJsonPatient = encryptionConfig.encryptIPFSData(data);
         String offlineDataUrl = ipfsService.saveJSONObject(encryptedJsonPatient);
         HashWithSalt dataHashWithSalt = HashUtil.hashWithSalt(data);

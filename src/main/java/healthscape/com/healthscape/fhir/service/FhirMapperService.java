@@ -9,6 +9,8 @@ import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.fhir.dtos.NewPatientRecordDTO;
 import healthscape.com.healthscape.fhir.mapper.PatientMapper;
 import healthscape.com.healthscape.fhir.mapper.PractitionerMapper;
+import healthscape.com.healthscape.patient_records.model.PatientRecord;
+import healthscape.com.healthscape.patient_records.parser.PatientRecordParser;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.model.Specialty;
 import healthscape.com.healthscape.users.service.SpecialtyService;
@@ -45,6 +47,7 @@ public class FhirMapperService {
     private final FhirConfig fhirConfig;
     private final EncryptionConfig encryptionConfig;
     private final ObjectMapper objectMapper;
+    private final PatientRecordParser parser;
 
     // public Patient getPatientWithPersonalId(String personalId) {
     //     String encryptedId = encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(personalId);
@@ -95,8 +98,7 @@ public class FhirMapperService {
         String userId = appUser.getId().toString();
         Patient patient = patientMapper.appUserToFhirPatient(appUser, personalId);
         List<Identifier> identifiers = patientMapper.appUserToFhirIdentifiers(appUser, personalId, userId);
-        IParser parser = fhirConfig.getFhirContext().newJsonParser();
-        return new NewPatientRecordDTO(identifiersToJson(identifiers), parser.encodeResourceToString(patient));
+        return new NewPatientRecordDTO(identifiersToJson(identifiers), parser.convertPatientRecordToJson(new PatientRecord(patient)));
     }
 
 

@@ -52,6 +52,10 @@ public class UserService implements UserDetailsService {
 
     public AppUser getUserByRole(String role) {
         log.info("Fetching user with role {}", role);
+        List<AppUser> users = userRepo.findAppUserByRole_Name(role);
+        if(users.size() == 0){
+            return null;
+        }
         return userRepo.findAppUserByRole_Name(role).get(0);
     }
 

@@ -33,7 +33,7 @@ public class UserOrchestrator {
 
     public AppUser registerPatient(RegisterDto registerDto) throws Exception {
         AppUser appUser = null;
-        log.info("Registering patient with info {}", registerDto.toString());
+        log.info("Registering patient with info {}", registerDto.getIdentifier());
         try {
             IdentifiersDTO identifiersDTO = patientService.patientExist(registerDto.identifier);
             appUser = userService.register(registerDto);

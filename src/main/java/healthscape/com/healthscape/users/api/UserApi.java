@@ -45,7 +45,7 @@ public class UserApi {
         return ResponseEntity.ok().body(users);
     }
 
-    @GetMapping("")
+    @GetMapping("/patients")
     @PreAuthorize("hasAuthority('get_all_patients')")
     public ResponseEntity<List<UserDto>> getPatients() {
         List<UserDto> users = usersMapper.usersToUserDtos(userService.getPatients());

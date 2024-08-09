@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -15,7 +16,6 @@ import healthscape.com.healthscape.users.dto.RegisterPractitionerDto;
 import healthscape.com.healthscape.users.mapper.UsersMapper;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.orchestrator.UserOrchestrator;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
