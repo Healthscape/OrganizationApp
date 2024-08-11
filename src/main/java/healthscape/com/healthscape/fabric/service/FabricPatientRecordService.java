@@ -64,7 +64,9 @@ public class FabricPatientRecordService {
         Contract contract = fabricTransactionService.getContract(userId);
         String methodName = "GetMyPatientRecord";
         print(FabricTransactionType.EVALUATE, methodName);
-        byte[] result = contract.evaluateTransaction(methodName);
+        byte[] result = contract.evaluateTransaction(
+                                    methodName,
+                                    String.valueOf(new Date().getTime()));
         PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
         return patientRecordDAO.getOfflineDataUrl();
     }
@@ -83,14 +85,17 @@ public class FabricPatientRecordService {
         return new String(result);
     }
 
-    // public String getPatientRecord(String userId, String hashedPatientUserId) throws Exception {
-    //     Contract contract = fabricTransactionService.getContract(userId);
-    //     String methodName = "GetPatientRecord";
-    //     print(FabricTransactionType.EVALUATE, methodName);
-    //     byte[] result = contract.evaluateTransaction(methodName, hashedPatientUserId);
-    //     PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
-    //     return patientRecordDAO.getOfflineDataUrl();
-    // }
+    public String getPatientRecord(String userId, String hashedPatientUserId) throws Exception {
+        Contract contract = fabricTransactionService.getContract(userId);
+        String methodName = "GetPatientRecord";
+        print(FabricTransactionType.SUBMIT, methodName);
+        byte[] result = contract.submitTransaction(
+                                    methodName, 
+                                    hashedPatientUserId,
+                                    String.valueOf(new Date().getTime()));
+        PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
+        return patientRecordDAO.getOfflineDataUrl();
+    }
 
     // public String updatePatientRecord(String userId, PatientRecordDAO updatedPatient)
     //         throws Exception {

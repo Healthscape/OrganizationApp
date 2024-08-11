@@ -16,6 +16,7 @@ import healthscape.com.healthscape.patient_records.dtos.PatientRecordDto;
 import healthscape.com.healthscape.patient_records.dtos.PatientRecordPreview;
 import healthscape.com.healthscape.patient_records.mapper.PatientRecordChaincodeMapper;
 import healthscape.com.healthscape.patient_records.mapper.PatientRecordMapper;
+import healthscape.com.healthscape.patient_records.model.PatientRecord;
 import healthscape.com.healthscape.users.dto.RegisterDto;
 import healthscape.com.healthscape.users.model.AppUser;
 import healthscape.com.healthscape.users.service.UserService;
@@ -49,19 +50,15 @@ public class PatientRecordOrchestratorService {
     private final EncryptionConfig encryptionConfig;
     private final PatientService patientService;
 
-    // public PatientRecordDto getPatientRecord(String token, String userId) throws Exception {
-    //     AppUser appUser = userService.getUserFromToken(token);
-    //     AppUser patient = userService.getUserById(userId);
-    //     String offlineDataUrl = patient.getData();
-    //     if(offlineDataUrl == "" || offlineDataUrl == null){
-    //         offlineDataUrl = fabricPatientRecordService.getPatientRecord(appUser.getId().toString(), HashUtil.hashData(patient.getId().toString()));
-    //     }else{
-    //         offlineDataUrl = this.encryptionConfig.decryptDefaultData(patient.getData());
-    //     }
+    public PatientRecordDto getPatientRecord(String token, String userId) throws Exception {
+        AppUser appUser = userService.getUserFromToken(token);
+        AppUser patient = userService.getUserById(userId);
+        String offlineDataUrl = fabricPatientRecordService.getPatientRecord(appUser.getId().toString(), HashUtil.hashData(patient.getId().toString()));
+        appUser.setData(this.encryptionConfig.encryptDefaultData(offlineDataUrl));
         
-    //     Patient patientRecord = patientService.getPatient(offlineDataUrl);
-    //     return patientRecordMapper.mapToPatientRecord(patientRecord);
-    // }
+        PatientRecord patientRecord = patientService.getPatientRecord(offlineDataUrl);
+        return patientRecordMapper.mapToPatientRecord(patientRecord.getPatient());
+    }
 
     // public FhirUserDto getUserData(AppUser user) throws Exception {
     //     String offlineDataUrl = user.getData();

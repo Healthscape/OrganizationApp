@@ -37,41 +37,39 @@ public class PatientRecordMapper {
         return new PatientRecordPreview(name, surname, personalId, birthDate, photo, id);
     }
 
-    public PatientRecordDto mapToPatientRecord(Bundle patientRecordBundle) {
+    public PatientRecordDto mapToPatientRecord(Resource resource) {
         PatientRecordDto patientRecordDto = new PatientRecordDto();
-        for (Bundle.BundleEntryComponent e : patientRecordBundle.getEntry()) {
-            switch (e.getResource().getResourceType()) {
+            switch (resource.getResourceType()) {
                 case Patient -> {
-                    FhirUserDto userDto = this.fhirMapper.map((Patient) e.getResource());
+                    FhirUserDto userDto = this.fhirMapper.map((Patient) resource);
                     patientRecordDto.setUserDto(userDto);
                 }
                 case Encounter -> {
-                    EncounterDto encounterDto = this.encounterMapper.mapToEncounterDto((Encounter) e.getResource());
+                    EncounterDto encounterDto = this.encounterMapper.mapToEncounterDto((Encounter) resource);
                     patientRecordDto.getEncounters().add(encounterDto);
                 }
                 case MedicationAdministration -> {
-                    MedicationAdministrationDto medicationAdministrationDto = this.encounterMapper.mapToMedicationAdministrationDto((MedicationAdministration) e.getResource());
+                    MedicationAdministrationDto medicationAdministrationDto = this.encounterMapper.mapToMedicationAdministrationDto((MedicationAdministration) resource);
                     patientRecordDto.getMedications().add(medicationAdministrationDto);
                 }
                 case ClinicalImpression -> {
-                    ClinicalImpressionDto clinicalImpressionDto = this.encounterMapper.mapToClinicalImpressionDto((ClinicalImpression) e.getResource());
+                    ClinicalImpressionDto clinicalImpressionDto = this.encounterMapper.mapToClinicalImpressionDto((ClinicalImpression) resource);
                     patientRecordDto.getClinicalImpressions().add(clinicalImpressionDto);
                 }
                 case Condition -> {
-                    ConditionDto conditionDto = this.encounterMapper.mapToConditionDto((Condition) e.getResource());
+                    ConditionDto conditionDto = this.encounterMapper.mapToConditionDto((Condition) resource);
                     patientRecordDto.getConditions().add(conditionDto);
                 }
                 case DocumentReference -> {
-                    DocumentReferenceDto documentRefDto = this.encounterMapper.mapToDocumentReferenceDto((DocumentReference) e.getResource());
+                    DocumentReferenceDto documentRefDto = this.encounterMapper.mapToDocumentReferenceDto((DocumentReference) resource);
                     patientRecordDto.getDocumentReferences().add(documentRefDto);
                 }
                 case AllergyIntolerance -> {
-                    AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto((AllergyIntolerance) e.getResource());
+                    AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto((AllergyIntolerance) resource);
                     patientRecordDto.getAllergies().add(allergyDto);
                 }
                 default -> {
                 }
-            }
         }
         return patientRecordDto;
     }

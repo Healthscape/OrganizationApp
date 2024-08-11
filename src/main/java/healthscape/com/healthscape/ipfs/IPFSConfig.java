@@ -14,7 +14,11 @@ public class IPFSConfig {
     IPFS ipfs;
 
     public IPFSConfig(){
-        ipfs = new IPFS(Config.IPFS_URL);
+        try{
+            ipfs = new IPFS(Config.IPFS_URL);
+        } catch(Exception e){
+            System.out.println(e.getMessage());
+        }
     }
     
 }

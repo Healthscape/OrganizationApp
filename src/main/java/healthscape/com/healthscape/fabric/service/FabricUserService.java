@@ -97,9 +97,11 @@ public class FabricUserService {
         registrationRequest.setAffiliation("org1.department1");
         registrationRequest.setEnrollmentID(id);
         registrationRequest.addAttribute(new Attribute("role", appUser.getRole().getName()));
+        registrationRequest.addAttribute(new Attribute("name", appUser.getName() + " " + appUser.getSurname()));
         String enrollmentSecret = caClient.register(registrationRequest, fabricAdmin);
         EnrollmentRequest enrollmentRequest = new EnrollmentRequest();
         enrollmentRequest.addAttrReq("role");
+        enrollmentRequest.addAttrReq("name");
         Enrollment enrollment = caClient.enroll(id, enrollmentSecret, enrollmentRequest);
         Identity user = Identities.newX509Identity("Org1MSP", enrollment);
         walletUtil.putIdentity(encryptedId, user);

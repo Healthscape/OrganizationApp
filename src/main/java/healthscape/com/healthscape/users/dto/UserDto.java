@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 @JsonIgnoreProperties
 public class UserDto {
 
+    private String id;
     private String name;
     private String surname;
     private String email;

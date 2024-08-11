@@ -50,6 +50,8 @@ INSERT INTO permission
 VALUES (20, 'get_all_patients');
 INSERT INTO permission
 VALUES (21, 'find_record_with_userId');
+INSERT INTO permission
+VALUES (22, 'get_access_log');
 
 /* ========= ADMIN ========= */
 INSERT INTO role_permissions
@@ -90,6 +92,8 @@ INSERT INTO role_permissions
 VALUES (20, 3);/* practitioner <- get_all_patients*/
 INSERT INTO role_permissions
 VALUES (21, 3);/* practitioner <- find_record_with_userId*/
+INSERT INTO role_permissions
+VALUES (22, 3);/* practitioner <- get_access_log*/
 
 /* ========= PATIENT ========= */
 INSERT INTO role_permissions
@@ -108,6 +112,8 @@ INSERT INTO role_permissions
 VALUES (12, 2);/* patient <- get_patient_record*/
 INSERT INTO role_permissions
 VALUES (16, 2);/* patient <- verify_integrity*/
+INSERT INTO role_permissions
+VALUES (22, 2);/* patient <- get_access_log*/
 
 /* ************************************* SPECIALTY ************************************* */
 INSERT INTO specialty

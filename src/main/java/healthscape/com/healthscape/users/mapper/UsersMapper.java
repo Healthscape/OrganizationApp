@@ -38,6 +38,7 @@ public class UsersMapper {
         UserDto userDto = new UserDto();
         modelMapper.map(appUser, userDto);
         userDto.setRole(appUser.getRole().getName());
+        userDto.setId(appUser.getId().toString());
         try {
             userDto.setImage(fileService.getImage(appUser.getImagePath()));
         } catch (Exception e) {

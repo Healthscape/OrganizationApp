@@ -2,6 +2,7 @@ package healthscape.com.healthscape.patient_records.api;
 
 import healthscape.com.healthscape.patient_records.dtos.PatientRecordDto;
 import healthscape.com.healthscape.patient_records.dtos.PatientRecordPreview;
+import healthscape.com.healthscape.patient_records.model.PatientRecord;
 import healthscape.com.healthscape.patient_records.service.PatientRecordOrchestratorService;
 import healthscape.com.healthscape.shared.ResponseJson;
 import lombok.RequiredArgsConstructor;
@@ -19,16 +20,16 @@ public class PatientRecordApi {
 
     private final PatientRecordOrchestratorService patientRecordOrchestratorService;
 
-    // @GetMapping(value = "", params = {"userId"})
-    // @PreAuthorize("hasAuthority('find_record_with_userId')")
-    // public ResponseEntity<?> findRecordWithUserId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String userId) {
-    //     try {
-    //         PatientRecordPreview patientRecordPreview = this.patientRecordOrchestratorService.getPatientRecord(token, personalId);
-    //         return ResponseEntity.ok(patientRecordPreview);
-    //     } catch (Exception e) {
-    //         return handleException(e);
-    //     }
-    // }
+    @GetMapping(value = "", params = {"userId"})
+    @PreAuthorize("hasAuthority('find_record_with_userId')")
+    public ResponseEntity<?> findRecordWithUserId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String userId) {
+        try {
+            PatientRecordDto patientRecord = this.patientRecordOrchestratorService.getPatientRecord(token, userId);
+            return ResponseEntity.ok(patientRecord);
+        } catch (Exception e) {
+            return handleException(e);
+        }
+    }
 
     // @GetMapping(value = "/integrity")
     // @PreAuthorize("hasAuthority('verify_integrity')")

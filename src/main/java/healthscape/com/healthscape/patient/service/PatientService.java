@@ -106,13 +106,13 @@ public class PatientService {
             offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
         }
         
-        PatientRecord patientRecord = getPatient(offlineDataUrl);
+        PatientRecord patientRecord = getPatientRecord(offlineDataUrl);
         return fhirMapper.map(patientRecord.getPatient());
     }
 
     public String updateMyPatientRecord(AppUser user, FhirUserDto userDto) throws Exception {
         String offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
-        PatientRecord patientRecord = getPatient(offlineDataUrl);
+        PatientRecord patientRecord = getPatientRecord(offlineDataUrl);
         Patient updatedPatient = fhirMapper.updatePatient(userDto, patientRecord.getPatient());
         patientRecord.patient = updatedPatient;
         PatientRecordDAO patientRecordDAO = savePatientRecord(patientRecord);
@@ -120,7 +120,7 @@ public class PatientService {
         return encryptionConfig.encryptDefaultData(patientRecordDAO.getOfflineDataUrl());
     }
 
-    public PatientRecord getPatient(String offlineDataUrl) throws JsonMappingException, JsonProcessingException{
+    public PatientRecord getPatientRecord(String offlineDataUrl) throws JsonMappingException, JsonProcessingException{
         String encryptedPatientData = ipfsService.getJSONObject(offlineDataUrl);
         String patientData = encryptionConfig.decryptIPFSData(encryptedPatientData);
         PatientRecord patientRecord = parser.parsePatientRecord(patientData);

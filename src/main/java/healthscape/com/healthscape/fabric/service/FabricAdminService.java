@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import healthscape.com.healthscape.fabric.dao.IdentifiersDAO;
 import healthscape.com.healthscape.fabric.util.FabricTransactionType;
 import healthscape.com.healthscape.util.Config;
+import healthscape.com.healthscape.util.HashUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 

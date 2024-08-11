@@ -20,12 +20,14 @@ import healthscape.com.healthscape.fhir.config.FhirConfig;
 import healthscape.com.healthscape.patient_records.model.PatientRecord;
 import io.jsonwebtoken.io.IOException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class PatientRecordParser {
 
     private final FhirConfig fhirConfig;
@@ -35,7 +37,8 @@ public class PatientRecordParser {
         IParser jsonParser = fhirConfig.getFhirContext().newJsonParser();
         // Parse JSON string into a JsonNode tree for easier access
         JsonNode rootNode = objectMapper.readTree(jsonString);
-        
+        log.info("rootNode size: {}", rootNode.size());
+
         // Create a new PatientRecord object
         PatientRecord patientRecord = new PatientRecord();
         
@@ -43,6 +46,7 @@ public class PatientRecordParser {
         JsonNode patientNode = rootNode.get("patient");
         if (patientNode != null) {
             patientRecord.patient = (Patient) jsonParser.parseResource(Patient.class, patientNode.toString());
+            log.info("Done patinet");
         }
         
         // Parse the encounters list
@@ -53,6 +57,8 @@ public class PatientRecordParser {
                 Encounter encounter = (Encounter) jsonParser.parseResource(Encounter.class, encounterNode.toString());
                 patientRecord.encounters.add(encounter);
             }
+            log.info("Done encountersNode");
+
         }
         
         // Parse the medications list
@@ -63,6 +69,7 @@ public class PatientRecordParser {
                 MedicationAdministration medication = (MedicationAdministration) jsonParser.parseResource(MedicationAdministration.class, medicationNode.toString());
                 patientRecord.medications.add(medication);
             }
+            log.info("Done medicationsNode");
         }
         
         // Parse the impressions list
@@ -73,6 +80,7 @@ public class PatientRecordParser {
                 ClinicalImpression impression = (ClinicalImpression) jsonParser.parseResource(ClinicalImpression.class, impressionNode.toString());
                 patientRecord.impressions.add(impression);
             }
+            log.info("Done impressionsNode");
         }
         
         // Parse the conditions list
@@ -83,6 +91,7 @@ public class PatientRecordParser {
                 Condition condition = (Condition) jsonParser.parseResource(Condition.class, conditionNode.toString());
                 patientRecord.conditions.add(condition);
             }
+            log.info("Done conditionsNode");
         }
         
         // Parse the allergies list
@@ -93,6 +102,7 @@ public class PatientRecordParser {
                 AllergyIntolerance allergy = (AllergyIntolerance) jsonParser.parseResource(AllergyIntolerance.class, allergyNode.toString());
                 patientRecord.allergies.add(allergy);
             }
+            log.info("Done allergiesNode");
         }
         
         // Parse the documentReferences list
@@ -103,8 +113,11 @@ public class PatientRecordParser {
                 DocumentReference documentReference = (DocumentReference) jsonParser.parseResource(DocumentReference.class, documentReferenceNode.toString());
                 patientRecord.documentReferences.add(documentReference);
             }
+            log.info("Done documentReferencesNode");
         }
         
+        log.info("jsonString: {}", jsonString);
+        log.info("patientRecord: {}", patientRecord.getPatient().getId().toString());
         return patientRecord;
     }
 
