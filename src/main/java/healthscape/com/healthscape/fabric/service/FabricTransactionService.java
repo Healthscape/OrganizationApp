@@ -1,7 +1,5 @@
 package healthscape.com.healthscape.fabric.service;
 
-import healthscape.com.healthscape.users.model.AppUser;
-import healthscape.com.healthscape.users.service.UserService;
 import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
 import jakarta.transaction.Transactional;

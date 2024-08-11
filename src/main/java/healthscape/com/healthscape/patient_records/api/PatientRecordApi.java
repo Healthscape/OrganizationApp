@@ -1,8 +1,6 @@
 package healthscape.com.healthscape.patient_records.api;
 
 import healthscape.com.healthscape.patient_records.dtos.PatientRecordDto;
-import healthscape.com.healthscape.patient_records.dtos.PatientRecordPreview;
-import healthscape.com.healthscape.patient_records.model.PatientRecord;
 import healthscape.com.healthscape.patient_records.service.PatientRecordOrchestratorService;
 import healthscape.com.healthscape.shared.ResponseJson;
 import lombok.RequiredArgsConstructor;
@@ -31,34 +29,12 @@ public class PatientRecordApi {
         }
     }
 
-    // @GetMapping(value = "/integrity")
-    // @PreAuthorize("hasAuthority('verify_integrity')")
-    // public ResponseEntity<?> verifyRecordIntegrity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-    //     try {
-    //         this.patientRecordOrchestratorService.verifyRecordIntegrity(token);
-    //         return ResponseEntity.ok("");
-    //     } catch (Exception e) {
-    //         return handleException(e);
-    //     }
-    // }
-
     // @GetMapping(value = "", params = {"personalId"})
     // @PreAuthorize("hasAuthority('find_record_with_personalId')")
     // public ResponseEntity<?> findRecordWithPersonalId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String personalId) {
     //     try {
     //         PatientRecordPreview patientRecordPreview = this.patientRecordOrchestratorService.getPatientRecordPreview(token, personalId);
     //         return ResponseEntity.ok(patientRecordPreview);
-    //     } catch (Exception e) {
-    //         return handleException(e);
-    //     }
-    // }
-
-    // @GetMapping("/{recordId}")
-    // @PreAuthorize("hasAuthority('get_patient_record')")
-    // public ResponseEntity<?> getPatientRecord(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable String recordId) {
-    //     try {
-    //         PatientRecordDto patientRecordDto = this.patientRecordOrchestratorService.getPatientRecord(token, recordId);
-    //         return ResponseEntity.ok(patientRecordDto);
     //     } catch (Exception e) {
     //         return handleException(e);
     //     }

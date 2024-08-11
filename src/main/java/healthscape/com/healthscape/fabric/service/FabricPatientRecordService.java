@@ -2,16 +2,9 @@ package healthscape.com.healthscape.fabric.service;
 
 import healthscape.com.healthscape.fabric.dao.IdentifiersDAO;
 import healthscape.com.healthscape.fabric.dao.PatientRecordDAO;
-import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
-import healthscape.com.healthscape.fabric.dto.MyChaincodePatientRecordDto;
 import healthscape.com.healthscape.fabric.util.FabricTransactionType;
-import healthscape.com.healthscape.fhir.dtos.NewPatientRecordDTO;
-import healthscape.com.healthscape.ipfs.IPFSService;
-import healthscape.com.healthscape.patient.service.PatientService;
-import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
 import healthscape.com.healthscape.util.HashUtil;
-import healthscape.com.healthscape.util.HashWithSalt;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,14 +102,6 @@ public class FabricPatientRecordService {
     //                                 updatedPatient.getHashedData(),
     //                                 updatedPatient.getSalt(),
     //                                 String.valueOf(new Date().getTime()));
-    //     return new String(result);
-    // }
-
-    // public String previewPatientRecord(String email) throws Exception {
-    //     Contract contract = fabricTransactionService.getContract(email);
-    //     String methodName = "PreviewPatientRecord";
-    //     print(FabricTransactionType.EVALUATE, methodName);
-    //     byte[] result = contract.evaluateTransaction(methodName);
     //     return new String(result);
     // }
 

@@ -3,7 +3,6 @@ package healthscape.com.healthscape.encounter.service;
 import healthscape.com.healthscape.encounter.dto.PatientRecordUpdateDto;
 import healthscape.com.healthscape.encounter.dto.StartEncounterDto;
 import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
-import healthscape.com.healthscape.fabric.service.FabricAccessRequestService;
 import healthscape.com.healthscape.fabric.service.FabricPatientRecordService;
 import healthscape.com.healthscape.fhir.service.FhirPatientRecordService;
 import healthscape.com.healthscape.patient_records.dtos.AllergyDto;
@@ -26,7 +25,6 @@ public class EncounterService {
 
 
     private final UserService userService;
-    private final FabricAccessRequestService fabricAccessRequestService;
     private final FabricPatientRecordService fabricPatientRecordService;
     private final PatientRecordChaincodeMapper patientRecordChaincodeMapper;
     private final FhirPatientRecordService fhirPatientRecordService;

@@ -2,7 +2,6 @@ package healthscape.com.healthscape.fabric.util;
 
 import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
-import lombok.extern.slf4j.Slf4j;
 
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.Wallet;
