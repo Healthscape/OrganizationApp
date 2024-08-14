@@ -53,6 +53,33 @@ public class FabricPatientRecordService {
         return encryptionConfig.encryptDefaultData(savedPatientRecordDAO.getOfflineDataUrl());
     }
 
+    public String getPatientRecord(String userId, String hashedPatientUserId) throws Exception {
+        Contract contract = fabricTransactionService.getContract(userId);
+        String methodName = "GetPatientRecord";
+        print(FabricTransactionType.SUBMIT, methodName);
+        byte[] result = contract.submitTransaction(
+                                    methodName, 
+                                    hashedPatientUserId,
+                                    String.valueOf(new Date().getTime()));
+        PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
+        return patientRecordDAO.getOfflineDataUrl();
+    }
+
+    public String updatePatientRecord(String userId, String patientUserId, PatientRecordDAO updatedPatient)
+            throws Exception {
+        Contract contract = fabricTransactionService.getContract(userId);
+        String methodName = "UpdatePatientRecord";
+        print(FabricTransactionType.SUBMIT, methodName);
+        byte[] result = contract.submitTransaction(
+                                    methodName,
+                                    HashUtil.hashData(patientUserId),
+                                    updatedPatient.getOfflineDataUrl(),
+                                    updatedPatient.getHashedData(),
+                                    updatedPatient.getSalt(),
+                                    String.valueOf(new Date().getTime()));
+        return new String(result);
+    }
+
     public String getMe(String userId) throws Exception {
         Contract contract = fabricTransactionService.getContract(userId);
         String methodName = "GetMyPatientRecord";
@@ -68,7 +95,7 @@ public class FabricPatientRecordService {
             throws Exception {
         Contract contract = fabricTransactionService.getContract(userId);
         String methodName = "UpdateMyPatientRecord";
-        print(FabricTransactionType.EVALUATE, methodName);
+        print(FabricTransactionType.SUBMIT, methodName);
         byte[] result = contract.submitTransaction(
                                     methodName,
                                     updatedPatient.getOfflineDataUrl(),
@@ -77,33 +104,6 @@ public class FabricPatientRecordService {
                                     String.valueOf(new Date().getTime()));
         return new String(result);
     }
-
-    public String getPatientRecord(String userId, String hashedPatientUserId) throws Exception {
-        Contract contract = fabricTransactionService.getContract(userId);
-        String methodName = "GetPatientRecord";
-        print(FabricTransactionType.SUBMIT, methodName);
-        byte[] result = contract.submitTransaction(
-                                    methodName, 
-                                    hashedPatientUserId,
-                                    String.valueOf(new Date().getTime()));
-        PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
-        return patientRecordDAO.getOfflineDataUrl();
-    }
-
-    // public String updatePatientRecord(String userId, PatientRecordDAO updatedPatient)
-    //         throws Exception {
-    //     Contract contract = fabricTransactionService.getContract(userId);
-    //     String methodName = "UpdatePatientRecord";
-    //     print(FabricTransactionType.EVALUATE, methodName);
-    //     byte[] result = contract.submitTransaction(
-    //                                 methodName,
-    //                                 hashedUserId,
-    //                                 updatedPatient.getOfflineDataUrl(),
-    //                                 updatedPatient.getHashedData(),
-    //                                 updatedPatient.getSalt(),
-    //                                 String.valueOf(new Date().getTime()));
-    //     return new String(result);
-    // }
 
     private void print(FabricTransactionType type, String methodName) {
         System.out.println("\n");

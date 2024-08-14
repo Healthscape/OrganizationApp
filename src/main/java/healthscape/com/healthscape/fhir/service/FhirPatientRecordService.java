@@ -1,38 +1,16 @@
 package healthscape.com.healthscape.fhir.service;
-
-import ca.uhn.fhir.rest.api.MethodOutcome;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import healthscape.com.healthscape.encounter.dto.*;
-import healthscape.com.healthscape.encounter.mapper.EncounterMapper;
-import healthscape.com.healthscape.fabric.dto.ChaincodePatientRecordDto;
-import healthscape.com.healthscape.fhir.config.FhirConfig;
-import healthscape.com.healthscape.patient_records.dtos.AllergyDto;
-import healthscape.com.healthscape.patient_records.dtos.ConditionDto;
-import healthscape.com.healthscape.patient_records.dtos.MedicationAdministrationDto;
-import healthscape.com.healthscape.users.model.AppUser;
-import healthscape.com.healthscape.util.Config;
-import healthscape.com.healthscape.util.EncryptionConfig;
-import healthscape.com.healthscape.util.HashUtil;
 import lombok.RequiredArgsConstructor;
-import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class FhirPatientRecordService {
 
     // private final IGenericClient fhirClient;
-    private final FhirConfig fhirConfig;
-    private final EncryptionConfig encryptionConfig;
-    private final EncounterMapper encounterMapper;
-    private final FhirMapperService fhirMapperService;
+    // private final FhirConfig fhirConfig;
+    // private final EncryptionConfig encryptionConfig;
+    // private final FhirEncounterMapper encounterMapper;
 
 
     // public ChaincodePatientRecordDto createPatientRecordUpdateDto(String recordId, String userId) {
@@ -42,13 +20,6 @@ public class FhirPatientRecordService {
     //     String encryptedUserId = this.encryptionConfig.defaultEncryptionUtil().encryptIfNotAlready(userId);
     //     return new ChaincodePatientRecordDto(offlineDataUrl, hashedData, encryptedUserId, "lala");
     // }
-
-    public String getPatientDataHash(Bundle bundle) {
-        String bundleStr = fhirConfig.getFhirContext().newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
-        JsonObject jsonObject = JsonParser.parseString(bundleStr).getAsJsonObject();
-        String dataStr = jsonObject.get("entry").toString();
-        return HashUtil.hashData(dataStr);
-    }
 
     // public Bundle getPatientRecord(String recordId) {
     //     if (recordId.length() == 64) {

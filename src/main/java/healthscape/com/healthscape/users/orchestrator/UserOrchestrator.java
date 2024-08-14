@@ -3,7 +3,6 @@ package healthscape.com.healthscape.users.orchestrator;
 import healthscape.com.healthscape.fabric.dto.IdentifiersDTO;
 import healthscape.com.healthscape.fabric.service.FabricUserService;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
-import healthscape.com.healthscape.fhir.service.FhirMapperService;
 import healthscape.com.healthscape.patient.service.PatientService;
 import healthscape.com.healthscape.practitioner.service.PractitionerService;
 import healthscape.com.healthscape.users.dto.RegisterDto;
@@ -26,7 +25,6 @@ public class UserOrchestrator {
 
     private final UserService userService;
     private final FabricUserService fabricUserService;
-    private final FhirMapperService fhirUserService;
     private final PractitionerService practitionerService;
     private final PatientService patientService;
 
@@ -82,9 +80,8 @@ public class UserOrchestrator {
     public AppUser registerPractitioner(RegisterPractitionerDto user) throws Exception {
         AppUser appUser = userService.registerPractitioner(user);
         try {
-            String practitionerJson = fhirUserService.createNewPractitioner(appUser, user.getSpecialty());
             fabricUserService.registerUser(appUser);
-            String offlineDateUrl = practitionerService.createNewPractitioner(practitionerJson);
+            String offlineDateUrl = practitionerService.createNewPractitioner(appUser, user.getSpecialty());
             appUser.setData(offlineDateUrl);
             return appUser;
         } catch (Exception e) {

@@ -1,9 +1,10 @@
 package healthscape.com.healthscape.patient_records.mapper;
 
-import healthscape.com.healthscape.encounter.mapper.EncounterMapper;
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
-import healthscape.com.healthscape.fhir.mapper.FhirMapper;
+import healthscape.com.healthscape.fhir.mapper.FhirEncounterMapper;
+import healthscape.com.healthscape.fhir.mapper.FhirUserMapper;
 import healthscape.com.healthscape.patient_records.dtos.*;
+import healthscape.com.healthscape.patient_records.model.PatientRecord;
 import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
 import lombok.AllArgsConstructor;
@@ -17,9 +18,9 @@ import java.util.Date;
 @AllArgsConstructor
 public class PatientRecordMapper {
 
-    private final FhirMapper fhirMapper;
+    private final FhirUserMapper fhirMapper;
     private final EncryptionConfig encryptionConfig;
-    private final EncounterMapper encounterMapper;
+    private final FhirEncounterMapper encounterMapper;
 
     public PatientRecordPreview mapToPreview(Patient patient) {
         String id = "";
@@ -37,40 +38,42 @@ public class PatientRecordMapper {
         return new PatientRecordPreview(name, surname, personalId, birthDate, photo, id);
     }
 
-    public PatientRecordDto mapToPatientRecord(Resource resource) {
+    public PatientRecordDto mapToPatientRecord(PatientRecord patientRecord) {
         PatientRecordDto patientRecordDto = new PatientRecordDto();
-            switch (resource.getResourceType()) {
-                case Patient -> {
-                    FhirUserDto userDto = this.fhirMapper.map((Patient) resource);
-                    patientRecordDto.setUserDto(userDto);
-                }
-                case Encounter -> {
-                    EncounterDto encounterDto = this.encounterMapper.mapToEncounterDto((Encounter) resource);
-                    patientRecordDto.getEncounters().add(encounterDto);
-                }
-                case MedicationAdministration -> {
-                    MedicationAdministrationDto medicationAdministrationDto = this.encounterMapper.mapToMedicationAdministrationDto((MedicationAdministration) resource);
-                    patientRecordDto.getMedications().add(medicationAdministrationDto);
-                }
-                case ClinicalImpression -> {
-                    ClinicalImpressionDto clinicalImpressionDto = this.encounterMapper.mapToClinicalImpressionDto((ClinicalImpression) resource);
-                    patientRecordDto.getClinicalImpressions().add(clinicalImpressionDto);
-                }
-                case Condition -> {
-                    ConditionDto conditionDto = this.encounterMapper.mapToConditionDto((Condition) resource);
-                    patientRecordDto.getConditions().add(conditionDto);
-                }
-                case DocumentReference -> {
-                    DocumentReferenceDto documentRefDto = this.encounterMapper.mapToDocumentReferenceDto((DocumentReference) resource);
-                    patientRecordDto.getDocumentReferences().add(documentRefDto);
-                }
-                case AllergyIntolerance -> {
-                    AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto((AllergyIntolerance) resource);
-                    patientRecordDto.getAllergies().add(allergyDto);
-                }
-                default -> {
-                }
+
+        FhirUserDto userDto = this.fhirMapper.map(patientRecord.getPatient());
+        patientRecordDto.setUserDto(userDto);
+        
+        for(Encounter encounter: patientRecord.getEncounters()){
+            EncounterDto encounterDto = this.encounterMapper.mapToEncounterDto(encounter);
+            patientRecordDto.getEncounters().add(encounterDto);
         }
+        
+        for(MedicationAdministration medicationAdministration: patientRecord.getMedications()){
+            MedicationAdministrationDto medicationAdministrationDto = this.encounterMapper.mapToMedicationAdministrationDto( medicationAdministration);
+            patientRecordDto.getMedications().add(medicationAdministrationDto);
+        }
+        
+        for(ClinicalImpression clinicalImpression: patientRecord.getImpressions()){
+            ClinicalImpressionDto clinicalImpressionDto = this.encounterMapper.mapToClinicalImpressionDto( clinicalImpression);
+            patientRecordDto.getClinicalImpressions().add(clinicalImpressionDto);
+        }
+        
+        for(Condition condition: patientRecord.getConditions()){
+            ConditionDto conditionDto = this.encounterMapper.mapToConditionDto(condition);
+            patientRecordDto.getConditions().add(conditionDto);
+        }
+        
+        for(DocumentReference documentReference: patientRecord.getDocumentReferences()){
+            DocumentReferenceDto documentRefDto = this.encounterMapper.mapToDocumentReferenceDto(documentReference);
+            patientRecordDto.getDocumentReferences().add(documentRefDto);
+        }
+        
+        for(AllergyIntolerance allergyIntolerance: patientRecord.getAllergies()){
+            AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto(allergyIntolerance);
+            patientRecordDto.getAllergies().add(allergyDto);
+        }
+        
         return patientRecordDto;
     }
 }

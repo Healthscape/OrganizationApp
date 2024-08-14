@@ -1,6 +1,6 @@
 package healthscape.com.healthscape.encounter.api;
 
-import healthscape.com.healthscape.encounter.dto.PatientRecordUpdateDto;
+import healthscape.com.healthscape.encounter.dto.NewEncounterDTO;
 import healthscape.com.healthscape.encounter.service.EncounterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +16,16 @@ import org.springframework.web.bind.annotation.*;
 public class EncounterApi {
 
     public final EncounterService encounterService;
+
+    @PostMapping("")
+    @PreAuthorize("hasAuthority('new_encounter')")
+    public ResponseEntity<?> addNewEncounter(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody NewEncounterDTO patientRecordUpdateDto) {
+        try {
+            return ResponseEntity.ok().body(encounterService.addNewEncounter(token, patientRecordUpdateDto));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     // @PostMapping("/start")
     // @PreAuthorize("hasAuthority('start_new_encounter')")

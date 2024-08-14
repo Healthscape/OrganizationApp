@@ -28,10 +28,12 @@ public class PatientRecordOrchestratorService {
         AppUser appUser = userService.getUserFromToken(token);
         AppUser patient = userService.getUserById(userId);
         String offlineDataUrl = fabricPatientRecordService.getPatientRecord(appUser.getId().toString(), HashUtil.hashData(patient.getId().toString()));
-        appUser.setData(this.encryptionConfig.encryptDefaultData(offlineDataUrl));
+        patient.setData(this.encryptionConfig.encryptDefaultData(offlineDataUrl));
         
         PatientRecord patientRecord = patientService.getPatientRecord(offlineDataUrl);
-        return patientRecordMapper.mapToPatientRecord(patientRecord.getPatient());
+        PatientRecordDto patientRecordDto = patientRecordMapper.mapToPatientRecord(patientRecord);
+        patientRecordDto.setOfflineDataUrl(offlineDataUrl);
+        return patientRecordDto;
     }
 
     // public void verifyRecordIntegrity(String token) throws Exception {

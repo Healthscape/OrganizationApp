@@ -1,9 +1,8 @@
-package healthscape.com.healthscape.fhir.mapper;
+package healthscape.com.healthscape.fhir.mapper.user_mapper;
 
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.file.service.FileService;
 import healthscape.com.healthscape.users.model.AppUser;
-import healthscape.com.healthscape.util.Config;
 import healthscape.com.healthscape.util.EncryptionConfig;
 import lombok.AllArgsConstructor;
 import org.hl7.fhir.r4.model.*;
@@ -53,22 +52,6 @@ public class PatientMapper {
             }
         }
         return fhirUserDto;
-    }
-
-    public List<Identifier> appUserToFhirIdentifiers(AppUser appUser, String personalId, String userId){
-        List<Identifier> identifiers = new ArrayList<>();
-        Identifier identifier = new Identifier();
-        identifier.setSystem("http://hl7.org/fhir/sid/us-ssn");
-        identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        identifier.setValue(personalId);
-        identifiers.add(identifier);
-        Identifier patientIdentifier = new Identifier();
-        patientIdentifier.setSystem(Config.HEALTHSCAPE_URL);
-        patientIdentifier.setUse(Identifier.IdentifierUse.OFFICIAL);
-        patientIdentifier.setValue(userId);
-        identifiers.add(patientIdentifier);
-
-        return identifiers;
     }
 
     public Patient appUserToFhirPatient(AppUser appUser, String personalId) {

@@ -51,8 +51,8 @@ public class PatientRecordParser {
         
         // Parse the encounters list
         JsonNode encountersNode = rootNode.get("encounters");
+        patientRecord.encounters = new ArrayList<>();
         if (encountersNode != null && encountersNode.isArray()) {
-            patientRecord.encounters = new ArrayList<>();
             for (JsonNode encounterNode : encountersNode) {
                 Encounter encounter = (Encounter) jsonParser.parseResource(Encounter.class, encounterNode.toString());
                 patientRecord.encounters.add(encounter);
@@ -63,8 +63,8 @@ public class PatientRecordParser {
         
         // Parse the medications list
         JsonNode medicationsNode = rootNode.get("medications");
+        patientRecord.medications = new ArrayList<>();
         if (medicationsNode != null && medicationsNode.isArray()) {
-            patientRecord.medications = new ArrayList<>();
             for (JsonNode medicationNode : medicationsNode) {
                 MedicationAdministration medication = (MedicationAdministration) jsonParser.parseResource(MedicationAdministration.class, medicationNode.toString());
                 patientRecord.medications.add(medication);
@@ -74,8 +74,8 @@ public class PatientRecordParser {
         
         // Parse the impressions list
         JsonNode impressionsNode = rootNode.get("impressions");
+        patientRecord.impressions = new ArrayList<>();
         if (impressionsNode != null && impressionsNode.isArray()) {
-            patientRecord.impressions = new ArrayList<>();
             for (JsonNode impressionNode : impressionsNode) {
                 ClinicalImpression impression = (ClinicalImpression) jsonParser.parseResource(ClinicalImpression.class, impressionNode.toString());
                 patientRecord.impressions.add(impression);
@@ -85,8 +85,8 @@ public class PatientRecordParser {
         
         // Parse the conditions list
         JsonNode conditionsNode = rootNode.get("conditions");
+        patientRecord.conditions = new ArrayList<>();
         if (conditionsNode != null && conditionsNode.isArray()) {
-            patientRecord.conditions = new ArrayList<>();
             for (JsonNode conditionNode : conditionsNode) {
                 Condition condition = (Condition) jsonParser.parseResource(Condition.class, conditionNode.toString());
                 patientRecord.conditions.add(condition);
@@ -96,8 +96,8 @@ public class PatientRecordParser {
         
         // Parse the allergies list
         JsonNode allergiesNode = rootNode.get("allergies");
+        patientRecord.allergies = new ArrayList<>();
         if (allergiesNode != null && allergiesNode.isArray()) {
-            patientRecord.allergies = new ArrayList<>();
             for (JsonNode allergyNode : allergiesNode) {
                 AllergyIntolerance allergy = (AllergyIntolerance) jsonParser.parseResource(AllergyIntolerance.class, allergyNode.toString());
                 patientRecord.allergies.add(allergy);
@@ -107,8 +107,8 @@ public class PatientRecordParser {
         
         // Parse the documentReferences list
         JsonNode documentReferencesNode = rootNode.get("documentReferences");
+        patientRecord.documentReferences = new ArrayList<>();
         if (documentReferencesNode != null && documentReferencesNode.isArray()) {
-            patientRecord.documentReferences = new ArrayList<>();
             for (JsonNode documentReferenceNode : documentReferencesNode) {
                 DocumentReference documentReference = (DocumentReference) jsonParser.parseResource(DocumentReference.class, documentReferenceNode.toString());
                 patientRecord.documentReferences.add(documentReference);
@@ -116,7 +116,6 @@ public class PatientRecordParser {
             log.info("Done documentReferencesNode");
         }
         
-        log.info("jsonString: {}", jsonString);
         log.info("patientRecord: {}", patientRecord.getPatient().getId().toString());
         return patientRecord;
     }

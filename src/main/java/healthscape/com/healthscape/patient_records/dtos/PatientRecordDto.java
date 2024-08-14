@@ -19,6 +19,7 @@ public class PatientRecordDto {
     List<ConditionDto> conditions;
     List<DocumentReferenceDto> documentReferences;
     List<AllergyDto> allergies;
+    String offlineDataUrl;
 
     public PatientRecordDto(){
         this.encounters = new ArrayList<>();
@@ -27,5 +28,6 @@ public class PatientRecordDto {
         this.conditions = new ArrayList<>();
         this.documentReferences = new ArrayList<>();
         this.allergies = new ArrayList<>();
+        this.offlineDataUrl = "";
     }
 }

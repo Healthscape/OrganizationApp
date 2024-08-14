@@ -1,4 +1,4 @@
-package healthscape.com.healthscape.fhir.mapper;
+package healthscape.com.healthscape.fhir.mapper.user_mapper;
 
 import healthscape.com.healthscape.fhir.dtos.FhirUserDto;
 import healthscape.com.healthscape.file.service.FileService;

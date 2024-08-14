@@ -1,4 +1,4 @@
-package healthscape.com.healthscape.encounter.mapper;
+package healthscape.com.healthscape.fhir.mapper;
 
 import healthscape.com.healthscape.encounter.dto.*;
 import healthscape.com.healthscape.patient_records.dtos.*;
@@ -11,14 +11,15 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class EncounterMapper {
+public class FhirEncounterMapper {
 
-    public Encounter mapToEncounter(Patient patient, Practitioner practitioner) {
+    public Encounter mapToEncounter(Patient patient, Practitioner practitioner, Date startDate) {
         Encounter encounter = new Encounter();
-        encounter.setStatus(Encounter.EncounterStatus.INPROGRESS);
+        encounter.setStatus(Encounter.EncounterStatus.FINISHED);
         Reference patientRef = new Reference(patient);
         patientRef = patientRef.setReference("Patient/" + patient.getIdElement().getIdPart());
         patientRef = patientRef.setDisplay(patient.getName().get(0).getGivenAsSingleString() + " " + patient.getName().get(0).getFamily());
@@ -32,7 +33,10 @@ public class EncounterMapper {
         encounterParticipantComponent.setIndividual(practitionerRef);
         participant.add(encounterParticipantComponent);
         encounter.setParticipant(participant);
-        encounter.setPeriod(new Period().setStart(new Date()));
+        Period period = new Period();
+        period.setEnd(new Date());
+        period.setStart(startDate);
+        encounter.setPeriod(period);
         return encounter;
     }
 
@@ -50,15 +54,15 @@ public class EncounterMapper {
         return encounterDto;
     }
 
-    public ClinicalImpression mapToClinicalImpression(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto) {
+    public ClinicalImpression mapToClinicalImpression(Reference encounterRef, NewEncounterDTO newEncounterDTO) {
         ClinicalImpression clinicalImpression = new ClinicalImpression();
         clinicalImpression.setEncounter(encounterRef);
-        clinicalImpression.setSubject(encounter.getSubject());
-        clinicalImpression.setDate(patientRecordUpdateDto.getDate());
+        clinicalImpression.setSubject(((Encounter) encounterRef.getResource()).getSubject());
+        clinicalImpression.setDate(newEncounterDTO.getDate());
         clinicalImpression.setStatus(ClinicalImpression.ClinicalImpressionStatus.COMPLETED);
-        clinicalImpression.setAssessor(encounter.getParticipant().get(0).getIndividual());
-        clinicalImpression.setDescription(patientRecordUpdateDto.getClinicalImpressionDescription());
-        clinicalImpression.setSummary(patientRecordUpdateDto.getClinicalImpressionSummary());
+        clinicalImpression.setAssessor(((Encounter) encounterRef.getResource()).getParticipant().get(0).getIndividual());
+        clinicalImpression.setDescription(newEncounterDTO.getClinicalImpressionDescription());
+        clinicalImpression.setSummary(newEncounterDTO.getClinicalImpressionSummary());
         return clinicalImpression;
     }
 
@@ -75,16 +79,15 @@ public class EncounterMapper {
         return clinicalImpressionDto;
     }
 
-    public MedicationAdministration mapToMedicationAdministration(Reference encounterRef, Encounter encounter, NewMedicationDto newMedicationDto, PatientRecordUpdateDto patientRecordUpdateDto, Reference medicationRef) {
+    public MedicationAdministration mapToMedicationAdministration(Reference patientRef, String dosage) {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
-        medicationAdministration.setMedication(medicationRef);
-        medicationAdministration.setContext(encounterRef);
-        medicationAdministration.setSubject(encounter.getSubject());
+        medicationAdministration.setSubject(patientRef);
         medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.INPROGRESS);
         MedicationAdministration.MedicationAdministrationDosageComponent dosageComponent = new MedicationAdministration.MedicationAdministrationDosageComponent();
-        dosageComponent.setText(newMedicationDto.getDosage());
+        dosageComponent.setText(dosage);
         medicationAdministration.setDosage(dosageComponent);
-        medicationAdministration.setEffective(new Period().setStart(patientRecordUpdateDto.getDate()));
+        medicationAdministration.setEffective(new Period().setStart(new Date()));
+        medicationAdministration.setId(UUID.randomUUID().toString());
         return medicationAdministration;
     }
 
@@ -101,24 +104,25 @@ public class EncounterMapper {
         return medicationAdministrationDto;
     }
 
-    public Medication mapToMedication(NewMedicationDto newMedicationDto) {
+    public Medication mapToMedication(String name) {
         Medication medication = new Medication();
-        medication.setCode(new CodeableConcept().setText(newMedicationDto.getMedication()));
+        medication.setCode(new CodeableConcept().setText(name));
+        medication.setId(UUID.randomUUID().toString());
         return medication;
     }
 
-    public DocumentReference mapToDocumentReference(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto, NewDocumentReferenceDto newDocumentReferenceDto) {
+    public DocumentReference mapToDocumentReference(Reference encounterRef, NewDocumentReferenceDto newDocumentReferenceDto) {
         DocumentReference documentReference = new DocumentReference();
-        documentReference.setDate(patientRecordUpdateDto.getDate());
-        documentReference.setSubject(encounter.getSubject());
-        documentReference.setAuthenticator(encounter.getParticipant().get(0).getIndividual());
+        documentReference.setDate(new Date());
+        documentReference.setSubject(((Encounter) encounterRef.getResource()).getSubject());
+        documentReference.setAuthenticator(((Encounter) encounterRef.getResource()).getParticipant().get(0).getIndividual());
         documentReference.setStatus(Enumerations.DocumentReferenceStatus.CURRENT);
         List<DocumentReference.DocumentReferenceContentComponent> contentComponents = new ArrayList<>();
         DocumentReference.DocumentReferenceContentComponent contentComponent = new DocumentReference.DocumentReferenceContentComponent();
         Attachment attachment = new Attachment();
         byte[] imageBytes = Base64.getDecoder().decode(newDocumentReferenceDto.getData().split(",")[1]);
         attachment.setData(imageBytes);
-        attachment.setCreation(patientRecordUpdateDto.getDate());
+        attachment.setCreation(new Date());
         attachment.setContentType(newDocumentReferenceDto.getContentType());
         attachment.setTitle(newDocumentReferenceDto.getTitle());
         contentComponent.setAttachment(attachment);
@@ -150,19 +154,19 @@ public class EncounterMapper {
     }
 
 
-    public Condition mapToCondition(Reference encounterRef, Encounter encounter, PatientRecordUpdateDto patientRecordUpdateDto, NewConditionDto newConditionDto) {
+    public Condition mapToCondition(Reference encounterRef, String conditionName) {
         Condition condition = new Condition();
         condition.setEncounter(encounterRef);
-        condition.setSubject(encounter.getSubject());
-        condition.setAsserter(encounter.getParticipant().get(0).getIndividual());
-        condition.setRecordedDate(patientRecordUpdateDto.getDate());
+        condition.setSubject(((Encounter) encounterRef.getResource()).getSubject());
+        condition.setAsserter(((Encounter) encounterRef.getResource()).getParticipant().get(0).getIndividual());
+        condition.setRecordedDate(new Date());
         CodeableConcept codeableConceptCode = new CodeableConcept();
-        codeableConceptCode.setText(newConditionDto.getText());
+        codeableConceptCode.setText(conditionName);
         condition.setCode(codeableConceptCode);
         CodeableConcept codeableConceptStatus = new CodeableConcept();
         codeableConceptStatus.setText("ACTIVE");
         condition.setClinicalStatus(codeableConceptStatus);
-        condition.setOnset(new Period().setStart(patientRecordUpdateDto.getDate()));
+        condition.setOnset(new Period().setStart(new Date()));
         return condition;
     }
 
@@ -180,12 +184,12 @@ public class EncounterMapper {
         return conditionDto;
     }
 
-    public AllergyIntolerance mapToAllergyIntolerance(Reference encounterRef, Encounter encounter, NewAllergyDto newAllergyDto, PatientRecordUpdateDto patientRecordUpdateDto) {
+    public AllergyIntolerance mapToAllergyIntolerance(Reference encounterRef, NewAllergyDto newAllergyDto) {
         AllergyIntolerance allergyIntolerance = new AllergyIntolerance();
-        allergyIntolerance.setPatient(encounter.getSubject());
+        allergyIntolerance.setPatient(((Encounter)encounterRef.getResource()).getSubject());
         allergyIntolerance.setEncounter(encounterRef);
-        allergyIntolerance.setRecordedDate(patientRecordUpdateDto.getDate());
-        allergyIntolerance.setAsserter(encounter.getParticipant().get(0).getIndividual());
+        allergyIntolerance.setRecordedDate(new Date());
+        allergyIntolerance.setAsserter(((Encounter)encounterRef.getResource()).getParticipant().get(0).getIndividual());
         CodeableConcept codeableConcept = new CodeableConcept();
         codeableConcept.setText(newAllergyDto.getCode());
         allergyIntolerance.setCode(codeableConcept);
@@ -198,7 +202,7 @@ public class EncounterMapper {
         CodeableConcept clinicalStatus = new CodeableConcept();
         clinicalStatus.setText("ACTIVE");
         allergyIntolerance.setClinicalStatus(clinicalStatus);
-        allergyIntolerance.setOnset(new Period().setStart(patientRecordUpdateDto.getDate()));
+        allergyIntolerance.setOnset(new Period().setStart(new Date()));
         return allergyIntolerance;
     }
 
@@ -214,5 +218,46 @@ public class EncounterMapper {
         allergyDto.setStart(resource.getOnsetPeriod().getStart());
         allergyDto.setEnd(resource.getOnsetPeriod().getEnd());
         return allergyDto;
+    }
+
+    public List<MedicationAdministration> mapOldToNewMedicationAdministration(List<MedicationAdministration> oldMedications,
+        NewMedicationDto newMedicationDto) {
+        for(MedicationAdministration administration: oldMedications){
+            if(administration.getIdPart().equals(newMedicationDto.getId())){
+                
+                administration.setStatus(MedicationAdministration.MedicationAdministrationStatus.fromCode(newMedicationDto.getStatus()));
+                administration.setEffective(((Period) administration.getEffective()).setEnd(new Date()));
+                return oldMedications;
+            }
+        }
+        return null;
+    }
+
+    public List<Condition> mapOldToNewCondition(List<Condition> oldConditions,
+        NewConditionDto newConditionDto) {
+        for(Condition condition: oldConditions){
+            if(condition.getIdPart().equals(newConditionDto.getId())){
+                CodeableConcept codeableConceptStatus = new CodeableConcept();
+                codeableConceptStatus.setText("INACTIVE");
+                condition.setClinicalStatus(codeableConceptStatus);
+                condition.setAbatement(new DateTimeType());
+                return oldConditions;
+            }
+        }
+        return null;
+    }
+
+    public List<AllergyIntolerance> mapOldToNewAllergies(List<AllergyIntolerance> oldAllergies,
+        NewAllergyDto newAllergyDto) {
+        for(AllergyIntolerance allergy: oldAllergies){
+            if(allergy.getIdPart().equals(newAllergyDto.getId())){
+                allergy.getOnsetPeriod().setEnd(new Date());
+                CodeableConcept codeableConcept = new CodeableConcept();
+                codeableConcept.setText("INACTIVE");
+                allergy.setClinicalStatus(codeableConcept);
+                return oldAllergies;
+            }
+        }
+        return null;
     }
 }
