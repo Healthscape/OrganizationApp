@@ -1,5 +1,6 @@
 package healthscape.com.healthscape.patient_records.service;
 
+import healthscape.com.healthscape.fabric.dao.PatientRecordDAO;
 import healthscape.com.healthscape.fabric.service.FabricPatientRecordService;
 import healthscape.com.healthscape.patient.service.PatientService;
 import healthscape.com.healthscape.patient_records.dtos.PatientRecordDto;
@@ -33,6 +34,17 @@ public class PatientRecordOrchestratorService {
         PatientRecord patientRecord = patientService.getPatientRecord(offlineDataUrl);
         PatientRecordDto patientRecordDto = patientRecordMapper.mapToPatientRecord(patientRecord);
         patientRecordDto.setOfflineDataUrl(offlineDataUrl);
+        return patientRecordDto;
+    }
+    
+    public PatientRecordDto getMyPatientRecord(String token) throws Exception {
+        AppUser appUser = userService.getUserFromToken(token);
+        PatientRecordDAO patientRecordDAO = fabricPatientRecordService.getMe(appUser.getId().toString());
+        appUser.setData(this.encryptionConfig.encryptDefaultData(patientRecordDAO.getOfflineDataUrl()));
+        
+        PatientRecord patientRecord = patientService.getPatientRecord(patientRecordDAO.getOfflineDataUrl());
+        PatientRecordDto patientRecordDto = patientRecordMapper.mapToPatientRecord(patientRecord);
+        patientRecordDto.setOfflineDataUrl(patientRecordDAO.getOfflineDataUrl());
         return patientRecordDto;
     }
 }
