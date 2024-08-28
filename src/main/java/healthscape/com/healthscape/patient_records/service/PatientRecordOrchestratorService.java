@@ -35,20 +35,4 @@ public class PatientRecordOrchestratorService {
         patientRecordDto.setOfflineDataUrl(offlineDataUrl);
         return patientRecordDto;
     }
-
-    // public void verifyRecordIntegrity(String token) throws Exception {
-    //     AppUser appUser = userService.getUserFromToken(token);
-    //     String patientRecordStr = fabricPatientRecordService.getMyPatientRecord(appUser.getEmail());
-    //     verifyDataIntegrity(patientRecordStr);
-    // }
-
-    // private Bundle verifyDataIntegrity(String patientRecordStr) throws Exception {
-    //     ChaincodePatientRecordDto fabricRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-    //     Bundle patientRecordBundle = fhirPatientRecordService.getPatientRecord(fabricRecord.getOfflineDataUrl());
-    //     String hashedData = fhirPatientRecordService.getPatientDataHash(patientRecordBundle);
-    //     if(!Objects.equals(hashedData, fabricRecord.getHashedData())){
-    //         throw new Exception("Patient Record is corrupted!");
-    //     }
-    //     return patientRecordBundle;
-    // }
 }

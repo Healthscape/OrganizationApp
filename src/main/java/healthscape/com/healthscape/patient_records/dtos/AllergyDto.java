@@ -20,4 +20,6 @@ public class AllergyDto {
     String status;
     Date start;
     Date end;
+    String category;
+    String criticality;
 }

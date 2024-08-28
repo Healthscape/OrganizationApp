@@ -37,6 +37,19 @@ public class HashUtil {
         return new HashWithSalt(hashString.toString(), salt);
     }
 
+    public static boolean checkIntegrity(String data, String salt, String hash) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
+        String saltedData = salt + data;
+        byte[] hashBytes = digest.digest(saltedData.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hashString = new StringBuilder();
+
+        for (byte b : hashBytes) {
+            hashString.append(String.format("%02x", b));
+        }
+
+        return hashString.toString().equals(hash);
+    }
+
     public static String hashData(String data) {
         MessageDigest digest;
         try {

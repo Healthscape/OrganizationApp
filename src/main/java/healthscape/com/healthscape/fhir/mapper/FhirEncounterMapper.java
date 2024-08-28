@@ -19,6 +19,7 @@ public class FhirEncounterMapper {
 
     public Encounter mapToEncounter(Patient patient, Practitioner practitioner, Date startDate) {
         Encounter encounter = new Encounter();
+        encounter.setId(UUID.randomUUID().toString());
         encounter.setStatus(Encounter.EncounterStatus.FINISHED);
         Reference patientRef = new Reference(patient);
         patientRef = patientRef.setReference("Patient/" + patient.getIdElement().getIdPart());
@@ -56,6 +57,7 @@ public class FhirEncounterMapper {
 
     public ClinicalImpression mapToClinicalImpression(Reference encounterRef, NewEncounterDTO newEncounterDTO) {
         ClinicalImpression clinicalImpression = new ClinicalImpression();
+        clinicalImpression.setId(UUID.randomUUID().toString());
         clinicalImpression.setEncounter(encounterRef);
         clinicalImpression.setSubject(((Encounter) encounterRef.getResource()).getSubject());
         clinicalImpression.setDate(newEncounterDTO.getDate());
@@ -81,13 +83,13 @@ public class FhirEncounterMapper {
 
     public MedicationAdministration mapToMedicationAdministration(Reference patientRef, String dosage) {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
+        medicationAdministration.setId(UUID.randomUUID().toString());
         medicationAdministration.setSubject(patientRef);
         medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.INPROGRESS);
         MedicationAdministration.MedicationAdministrationDosageComponent dosageComponent = new MedicationAdministration.MedicationAdministrationDosageComponent();
         dosageComponent.setText(dosage);
         medicationAdministration.setDosage(dosageComponent);
         medicationAdministration.setEffective(new Period().setStart(new Date()));
-        medicationAdministration.setId(UUID.randomUUID().toString());
         return medicationAdministration;
     }
 
@@ -113,6 +115,7 @@ public class FhirEncounterMapper {
 
     public DocumentReference mapToDocumentReference(Reference encounterRef, NewDocumentReferenceDto newDocumentReferenceDto) {
         DocumentReference documentReference = new DocumentReference();
+        documentReference.setId(UUID.randomUUID().toString());
         documentReference.setDate(new Date());
         documentReference.setSubject(((Encounter) encounterRef.getResource()).getSubject());
         documentReference.setAuthenticator(((Encounter) encounterRef.getResource()).getParticipant().get(0).getIndividual());
@@ -156,6 +159,7 @@ public class FhirEncounterMapper {
 
     public Condition mapToCondition(Reference encounterRef, String conditionName) {
         Condition condition = new Condition();
+        condition.setId(UUID.randomUUID().toString());
         condition.setEncounter(encounterRef);
         condition.setSubject(((Encounter) encounterRef.getResource()).getSubject());
         condition.setAsserter(((Encounter) encounterRef.getResource()).getParticipant().get(0).getIndividual());
@@ -186,6 +190,7 @@ public class FhirEncounterMapper {
 
     public AllergyIntolerance mapToAllergyIntolerance(Reference encounterRef, NewAllergyDto newAllergyDto) {
         AllergyIntolerance allergyIntolerance = new AllergyIntolerance();
+        allergyIntolerance.setId(UUID.randomUUID().toString());
         allergyIntolerance.setPatient(((Encounter)encounterRef.getResource()).getSubject());
         allergyIntolerance.setEncounter(encounterRef);
         allergyIntolerance.setRecordedDate(new Date());
@@ -217,6 +222,8 @@ public class FhirEncounterMapper {
         allergyDto.setStatus(resource.getClinicalStatus().getText());
         allergyDto.setStart(resource.getOnsetPeriod().getStart());
         allergyDto.setEnd(resource.getOnsetPeriod().getEnd());
+        allergyDto.setCategory(resource.getCategory().get(0).getCode());
+        allergyDto.setCriticality(resource.getCriticalityElement().getCode());
         return allergyDto;
     }
 

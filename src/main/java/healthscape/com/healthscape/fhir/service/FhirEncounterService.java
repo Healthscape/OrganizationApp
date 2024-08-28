@@ -21,7 +21,6 @@ import healthscape.com.healthscape.patient_records.model.PatientRecord;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
-import java.util.ArrayList;
 
 @AllArgsConstructor
 @Service
@@ -40,6 +39,10 @@ public class FhirEncounterService {
         // Medication
         List<MedicationAdministration> newMedicationList = saveMedications(encounterReference, newEncounterDto.getMedications(), oldPatientRecord.getMedications());
         oldPatientRecord.medications = newMedicationList;
+
+        // Conditions
+        List<Condition> newConditions = saveConditions(encounterReference, newEncounterDto.getConditions(), oldPatientRecord.getConditions());
+        oldPatientRecord.conditions = newConditions;
 
         // Impression
         ClinicalImpression newImpression = saveClinicalImpression(encounterReference, newEncounterDto, oldPatientRecord.getConditions());
@@ -82,17 +85,12 @@ public class FhirEncounterService {
     }
 
     private ClinicalImpression saveClinicalImpression(Reference encounterRef, NewEncounterDTO newEncounterDTO, List<Condition> oldConditions){
-        List<ClinicalImpression.ClinicalImpressionFindingComponent> conditions = saveConditions(encounterRef, newEncounterDTO.getConditions(), oldConditions);
         ClinicalImpression clinicalImpression = this.encounterMapper.mapToClinicalImpression(encounterRef, newEncounterDTO);
-        if(conditions!=null) {
-            clinicalImpression.setFinding(conditions);
-        }
         return clinicalImpression;
     }
 
 
-    private List<ClinicalImpression.ClinicalImpressionFindingComponent> saveConditions(Reference encounterRef, List<NewConditionDto> newConditions, List<Condition> oldConditions) {
-        List<ClinicalImpression.ClinicalImpressionFindingComponent> findingComponents = new ArrayList<>();
+    private List<Condition> saveConditions(Reference encounterRef, List<NewConditionDto> newConditions, List<Condition> oldConditions) {
         if(newConditions == null){
             return null;
         }
@@ -100,16 +98,11 @@ public class FhirEncounterService {
             if (newConditionDto.getId() != null) {
                 oldConditions = this.encounterMapper.mapOldToNewCondition(oldConditions, newConditionDto);
             } else {
-                Condition condition = this.encounterMapper.mapToCondition(encounterRef, newConditionDto.getText());
-                Reference conditionRef = new Reference(condition);
-                conditionRef.setReference("Condition/" + condition.getIdElement().getIdPart());
-                conditionRef.setDisplay(newConditionDto.getText());
-                ClinicalImpression.ClinicalImpressionFindingComponent clinicalImpressionFindingComponent = new ClinicalImpression.ClinicalImpressionFindingComponent();
-                clinicalImpressionFindingComponent.setItemReference(conditionRef);
-                findingComponents.add(clinicalImpressionFindingComponent);
+                Condition condition = this.encounterMapper.mapToCondition(encounterRef, newConditionDto.getCode());
+                oldConditions.add(condition);
             }
         }
-        return findingComponents;
+        return oldConditions;
     }
 
     private List<AllergyIntolerance> saveAllergies(Reference encounterRef, List<NewAllergyDto> newAllergyIntolerances, List<AllergyIntolerance> oldAllergyIntolerances) {

@@ -38,16 +38,15 @@ public class MonitoringApi {
         }
     }
 
-    // @GetMapping(value = "/integrity")
-    // @PreAuthorize("hasAuthority('verify_integrity')")
-    // public ResponseEntity<?> verifyRecordIntegrity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-    //     try {
-    //         this.patientRecordOrchestratorService.verifyRecordIntegrity(token);
-    //         return ResponseEntity.ok("");
-    //     } catch (Exception e) {
-    //         return handleException(e);
-    //     }
-    // }
+    @GetMapping(value = "/integrity")
+    @PreAuthorize("hasAuthority('verify_integrity')")
+    public ResponseEntity<?> verifyRecordIntegrity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        try {
+            return ResponseEntity.ok(this.monitoringService.verifyRecordIntegrity(token));
+        } catch (Exception e) {
+            return handleException(e);
+        }
+    }
 
     private ResponseEntity<?> handleException(Exception e) {
         return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));

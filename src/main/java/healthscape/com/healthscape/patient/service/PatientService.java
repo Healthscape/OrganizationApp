@@ -91,7 +91,7 @@ public class PatientService {
     public FhirUserDto getUserData(AppUser user) throws Exception {
         String offlineDataUrl = user.getData();
         if(offlineDataUrl == "" || offlineDataUrl == null){
-            offlineDataUrl = fabricPatientRecordService.getMe(user.getId().toString());
+            offlineDataUrl = fabricPatientRecordService.getMe(user.getId().toString()).getOfflineDataUrl();
         }else{
             offlineDataUrl = this.encryptionConfig.decryptDefaultData(user.getData());
         }

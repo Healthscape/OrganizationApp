@@ -13,9 +13,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Random;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,27 @@ public class UserOrchestrator {
     private final PractitionerService practitionerService;
     private final PatientService patientService;
 
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
+        try {
+            List<AppUser> allUsers = userService.getUsers();
+            Random random = new Random();
+            for(AppUser user: allUsers){
+                System.out.println("NAMEE:" + user.getRole().getName());
+                if(user.getRole().getName().equals("ROLE_PATIENT")){
+                    int number = 10000000 + random.nextInt(90000000);
+                    String offlineDateUrl = patientService.createNewPatient(user, String.valueOf(number));
+                    user.setData(offlineDateUrl);
+                    userService.updateUser(user);
+                }else if(user.getRole().getName().equals("ROLE_PRACTITIONER")){
+                    String offlineDateUrl = practitionerService.createNewPractitioner(user, user.getSpecialty());
+                    user.setData(offlineDateUrl);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
 
     public AppUser registerPatient(RegisterDto registerDto) throws Exception {
         AppUser appUser = null;

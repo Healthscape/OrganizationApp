@@ -80,7 +80,7 @@ public class FabricPatientRecordService {
         return new String(result);
     }
 
-    public String getMe(String userId) throws Exception {
+    public PatientRecordDAO getMe(String userId) throws Exception {
         Contract contract = fabricTransactionService.getContract(userId);
         String methodName = "GetMyPatientRecord";
         print(FabricTransactionType.EVALUATE, methodName);
@@ -88,7 +88,7 @@ public class FabricPatientRecordService {
                                     methodName,
                                     String.valueOf(new Date().getTime()));
         PatientRecordDAO patientRecordDAO = objectMapper.readValue(new String(result), PatientRecordDAO.class);
-        return patientRecordDAO.getOfflineDataUrl();
+        return patientRecordDAO;
     }
 
     public String updateMyPatientRecord(String userId, PatientRecordDAO updatedPatient)

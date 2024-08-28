@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Properties;
 
 @Service
@@ -55,6 +56,12 @@ public class FabricUserService {
     public void init() {
         try {
             enrollAdmin();
+            List<AppUser> allUsers = userService.getUsers();
+            for(AppUser user: allUsers){
+                if(!user.getRole().getName().equals("ROLE_ADMIN")){
+                    registerUser(user);
+                }
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
