@@ -247,7 +247,7 @@ public class FhirEncounterMapper {
                 CodeableConcept codeableConceptStatus = new CodeableConcept();
                 codeableConceptStatus.setText("INACTIVE");
                 condition.setClinicalStatus(codeableConceptStatus);
-                condition.setAbatement(new DateTimeType());
+                condition.setAbatement(new Period().setStart(new Date()));
                 return oldConditions;
             }
         }
