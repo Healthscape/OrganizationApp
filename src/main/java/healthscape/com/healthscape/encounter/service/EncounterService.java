@@ -39,35 +39,4 @@ public class EncounterService {
         return patientRecordDto;
     }
 
-    // public List<MedicationAdministrationDto> getMedicationAdministrationHistory(String token, String requestId) throws Exception {
-    //     AppUser user = userService.getUserFromToken(token);
-    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-    //     if(patientRecord != null){
-    //         return this.fhirPatientRecordService.getMedicationAdministrationHistory(patientRecord.getHashedUserId());
-    //     }
-    //     return null;
-    // }
-
-    // public List<ConditionDto> getConditionHistory(String token, String requestId) throws Exception {
-    //     AppUser user = userService.getUserFromToken(token);
-    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-    //     if(patientRecord != null){
-    //         return this.fhirPatientRecordService.getConditionHistory(patientRecord.getHashedUserId());
-    //     }
-    //     return null;
-    // }
-
-    // public List<AllergyDto> getAllergyHistory(String token, String requestId) throws Exception {
-    //     AppUser user = userService.getUserFromToken(token);
-    //     String patientRecordStr = this.fabricAccessRequestService.isAccessRequestApproved(user.getEmail(), requestId);
-    //     ChaincodePatientRecordDto patientRecord = patientRecordChaincodeMapper.mapToPatientRecordDto(patientRecordStr);
-    //     if(patientRecord != null){
-    //         return this.fhirPatientRecordService.geAllergyHistory(patientRecord.getHashedUserId());
-    //     }
-    //     return null;
-    // }
-
-
 }

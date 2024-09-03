@@ -11,7 +11,6 @@ import java.util.Base64;
 @Slf4j
 public class EncryptionUtil {
 
-    // private static final String SECRET_KEY_STRING = "SFYQFpSdI5JVlhcHXsrKMbamj82SQPuG";
     private final SecretKey key;
 
     public EncryptionUtil(SecretKey key) {

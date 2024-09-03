@@ -53,16 +53,6 @@ public class TokenUtils {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // private Date generateExpirationDate(Boolean isRefreshToken) {
-    //     Date date;
-    //     if (isRefreshToken.equals(true)) {
-    //         date = new Date(new Date().getTime() + 3600000);
-    //     } else {
-    //         date = new Date(new Date().getTime() + EXPIRES_IN);
-    //     }
-    //     return date;
-    // }
-
 
     public String getToken(HttpServletRequest request) {
         String authHeader = getAuthHeaderFromHeader(request);
@@ -168,10 +158,6 @@ public class TokenUtils {
         Date date = getExpirationDateFromToken(token);
         return date.before(new Date());
     }
-
-    // private Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
-    //     return (lastPasswordReset != null && created.before(lastPasswordReset));
-    // }
 
     public int getExpiredIn() {
         return EXPIRES_IN;

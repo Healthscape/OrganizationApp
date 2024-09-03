@@ -40,17 +40,6 @@ public class PatientRecordApi {
         }
     }
 
-    // @GetMapping(value = "", params = {"personalId"})
-    // @PreAuthorize("hasAuthority('find_record_with_personalId')")
-    // public ResponseEntity<?> findRecordWithPersonalId(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam String personalId) {
-    //     try {
-    //         PatientRecordPreview patientRecordPreview = this.patientRecordOrchestratorService.getPatientRecordPreview(token, personalId);
-    //         return ResponseEntity.ok(patientRecordPreview);
-    //     } catch (Exception e) {
-    //         return handleException(e);
-    //     }
-    // }
-
     private ResponseEntity<?> handleException(Exception e) {
         return ResponseEntity.badRequest().body(new ResponseJson(400, e.getMessage()));
     }

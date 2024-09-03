@@ -129,35 +129,4 @@ public class FhirEncounterService {
         return oldDocuments;
     }
 
-    // public List<ConditionDto> getConditionHistory(String patientId) {
-    //     Bundle response = this.fhirClient.search()
-    //             .forResource(Condition.class)
-    //             .where(Patient.IDENTIFIER.exactly().systemAndValues(Config.HEALTHSCAPE_URL, patientId))
-    //             .returnBundle(Bundle.class)
-    //             .execute();
-    //     List<ConditionDto> conditionDtos = new ArrayList<>();
-    //     for (Bundle.BundleEntryComponent entry : response.getEntry()) {
-    //         if (entry.getResource() instanceof Condition condition) {
-    //             ConditionDto conditionDto = this.encounterMapper.mapToConditionDto(condition);
-    //             conditionDtos.add(conditionDto);
-    //         }
-    //     }
-    //     return conditionDtos;
-    // }
-
-    // public List<AllergyDto> geAllergyHistory(String patientId) {
-    //     Bundle response = this.fhirClient.search()
-    //             .forResource(AllergyIntolerance.class)
-    //             .where(Patient.IDENTIFIER.exactly().systemAndValues(Config.HEALTHSCAPE_URL, patientId))
-    //             .returnBundle(Bundle.class)
-    //             .execute();
-    //     List<AllergyDto> allergyDtos = new ArrayList<>();
-    //     for (Bundle.BundleEntryComponent entry : response.getEntry()) {
-    //         if (entry.getResource() instanceof AllergyIntolerance allergy) {
-    //             AllergyDto allergyDto = this.encounterMapper.mapToAllergyDto(allergy);
-    //             allergyDtos.add(allergyDto);
-    //         }
-    //     }
-    //     return allergyDtos;
-    // }
 }
